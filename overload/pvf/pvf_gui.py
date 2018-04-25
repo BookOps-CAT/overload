@@ -22,7 +22,7 @@ from setup_dirs import MY_DOCS, USER_DATA, CVAL_REP, \
     BATCH_META, BATCH_STATS
 
 
-module_logger = logging.getLogger('overload_main.pvr_gui')
+module_logger = logging.getLogger('overload_console.pvr_gui')
 
 
 class ProcessVendorFiles(tk.Frame):
