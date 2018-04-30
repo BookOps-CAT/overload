@@ -25,6 +25,384 @@ from setup_dirs import MY_DOCS, USER_DATA, CVAL_REP, \
 module_logger = logging.getLogger('overload_console.pvr_gui')
 
 
+class OrderTemplate(tk.Frame):
+    def __init__(self, parent):
+        self.parent = parent
+        tk.Frame.__init__(self, self.parent, background='white')
+        self.top = tk.Toplevel(self, background='white')
+        self.cur_manager = BusyManager(self)
+        self.top.iconbitmap('./icons/templates.ico')
+        self.top.title('Record Templates')
+
+        # variables
+        self.template_name = tk.StringVar()
+        self.acqType = tk.StringVar()
+        self.claim = tk.StringVar()
+        self.oCode1 = tk.StringVar()
+        self.oCode2 = tk.StringVar()
+        self.oCode3 = tk.StringVar()
+        self.oCode4 = tk.StringVar()
+        self.oForm = tk.StringVar()
+        self.oNote = tk.StringVar()
+        self.oType = tk.StringVar()
+        self.vendor = tk.StringVar()
+        self.lang = tk.StringVar()
+        self.country = tk.StringVar()
+        self.identity = tk.StringVar()
+        self.genNote = tk.StringVar()
+        self.intNote = tk.StringVar()
+        self.oldOrdNo = tk.StringVar()
+        self.selector = tk.StringVar()
+        self.venAddr = tk.StringVar()
+        self.venNote = tk.StringVar()
+        self.venTitleNo = tk.StringVar()
+        self.blanketPO = tk.StringVar()
+        self.shipTo = tk.StringVar()
+        self.requestor = tk.StringVar()
+        self.paidNote = tk.StringVar()
+        self.bForm = tk.StringVar()
+
+        # layout of the main frame
+        self.top.columnconfigure(0, minsize=5)
+        self.top.columnconfigure(1, minsize=200)
+        # self.top.columnconfigure(7, minsize=5)
+        self.top.columnconfigure(9, minsize=5)
+        self.top.columnconfigure(15, minsize=5)
+        # self.top.rowconfigure(19, minsize=5)
+        self.top.rowconfigure(21, minsize=5)
+        self.top.rowconfigure(23, minsize=10)
+
+        # templates list
+        ttk.Label(self.top, text='available:').grid(
+            row=0, column=1, sticky='sw', pady=10)
+        scrollbar = ttk.Scrollbar(self.top, orient=tk.VERTICAL)
+        scrollbar.grid(
+            row=1, column=2, sticky='nsw', rowspan=20, padx=2, pady=10)
+        self.templateLst = tk.Listbox(
+            self.top,
+            yscrollcommand=scrollbar.set)
+        self.templateLst.bind('<Double-Button-1>', self.show_details)
+        self.templateLst.grid(
+            row=1, column=1, sticky='snew', rowspan=20, pady=10)
+        scrollbar['command'] = self.templateLst.yview
+
+        # template name
+        ttk.Label(self.top, text='template:').grid(
+            row=0, column=4, sticky='sw', padx=5, pady=10)
+        self.templateEnt = ttk.Entry(
+            self.top, textvariable=self.template_name)
+        self.templateEnt.grid(
+            row=0, column=5, columnspan=8, sticky='sew', pady=10)
+
+        # fixed fields frame
+        self.fixedFrm = ttk.LabelFrame(
+            self.top,
+            text='order fixed fields')
+        self.fixedFrm.grid(
+            row=1, rowspan=12, column=4, columnspan=5,
+            sticky='snew', padx=5, pady=5)
+        self.fixedFrm.columnconfigure(2, minsize=5)
+        self.fixedFrm.rowconfigure(12, minsize=5)
+
+        # fixed fields widgets
+        ttk.Label(self.fixedFrm, text='ACQ Type', style='Small.TLabel').grid(
+            row=0, column=0, columnspan=2, sticky='sw')
+        self.acqTypeCbx = ttk.Combobox(
+            self.fixedFrm, textvariable=self.acqType)
+        self.acqTypeCbx.grid(
+            row=1, column=0, columnspan=2, sticky='sew')
+
+        ttk.Label(self.fixedFrm, text='Claim', style='Small.TLabel').grid(
+            row=2, column=0, columnspan=2, sticky='sw')
+        self.claimCbx = ttk.Combobox(
+            self.fixedFrm, textvariable=self.claim)
+        self.claimCbx.grid(
+            row=3, column=0, columnspan=2, sticky='sew')
+
+        ttk.Label(
+            self.fixedFrm, text='OrderCode 1',
+            style='Small.TLabel').grid(
+            row=4, column=0, sticky='sw')
+        self.oCode1Cbx = ttk.Combobox(
+            self.fixedFrm, textvariable=self.oCode1)
+        self.oCode1Cbx.grid(
+            row=5, column=0, columnspan=2, sticky='sew')
+
+        ttk.Label(
+            self.fixedFrm, text='OrderCode 2',
+            style='Small.TLabel').grid(
+            row=6, column=0, columnspan=2, sticky='sw')
+        self.oCode2Cbx = ttk.Combobox(
+            self.fixedFrm, textvariable=self.oCode2)
+        self.oCode2Cbx.grid(
+            row=7, column=0, columnspan=2, sticky='sew')
+
+        ttk.Label(
+            self.fixedFrm, text='OrderCode 3',
+            style='Small.TLabel').grid(
+            row=8, column=0, columnspan=2, sticky='sw')
+        self.oCode3Cbx = ttk.Combobox(
+            self.fixedFrm, textvariable=self.oCode3)
+        self.oCode3Cbx.grid(
+            row=9, column=0, columnspan=2, sticky='sew')
+
+        ttk.Label(
+            self.fixedFrm, text='OrderCode 4',
+            style='Small.TLabel').grid(
+            row=10, column=0, columnspan=2, sticky='sw')
+        self.oCode4Cbx = ttk.Combobox(
+            self.fixedFrm, textvariable=self.oCode4)
+        self.oCode4Cbx.grid(
+            row=11, column=0, columnspan=2, sticky='sew')
+
+        ttk.Label(
+            self.fixedFrm, text='Form',
+            style='Small.TLabel').grid(
+            row=0, column=3, columnspan=2, sticky='sw')
+        self.oFormCbx = ttk.Combobox(
+            self.fixedFrm, textvariable=self.oForm)
+        self.oFormCbx.grid(
+            row=1, column=3, columnspan=2, sticky='sew')
+
+        ttk.Label(
+            self.fixedFrm, text='Order Note',
+            style='Small.TLabel').grid(
+            row=2, column=3, columnspan=2, sticky='sw')
+        self.oNoteCbx = ttk.Combobox(
+            self.fixedFrm, textvariable=self.oNote)
+        self.oNoteCbx.grid(
+            row=3, column=3, columnspan=2, sticky='sew')
+
+        ttk.Label(
+            self.fixedFrm, text='Order Type',
+            style='Small.TLabel').grid(
+            row=4, column=3, columnspan=2, sticky='sw')
+        self.oTypeCbx = ttk.Combobox(
+            self.fixedFrm, textvariable=self.oType)
+        self.oTypeCbx.grid(
+            row=5, column=3, columnspan=2, sticky='sew')
+
+        ttk.Label(
+            self.fixedFrm, text='Vendor',
+            style='Small.TLabel').grid(
+            row=6, column=3, columnspan=2, sticky='sw')
+        self.vendorCbx = ttk.Combobox(
+            self.fixedFrm, textvariable=self.vendor)
+        self.vendorCbx.grid(
+            row=7, column=3, columnspan=2, sticky='sew')
+
+        ttk.Label(
+            self.fixedFrm, text='Language',
+            style='Small.TLabel').grid(
+            row=8, column=3, columnspan=2, sticky='sw')
+        self.langCbx = ttk.Combobox(
+            self.fixedFrm, textvariable=self.lang)
+        self.langCbx.grid(
+            row=9, column=3, columnspan=2, sticky='sew')
+
+        ttk.Label(
+            self.fixedFrm, text='Country',
+            style='Small.TLabel').grid(
+            row=10, column=3, columnspan=2, sticky='sw')
+        self.countryCbx = ttk.Combobox(
+            self.fixedFrm, textvariable=self.country)
+        self.countryCbx.grid(
+            row=11, column=3, columnspan=2, sticky='sew')
+
+        # variable fields frame
+        self.varFrm = ttk.LabelFrame(
+            self.top,
+            text='order variable fields')
+        self.varFrm.grid(
+            row=1, rowspan=12, column=10, columnspan=5,
+            sticky='snew', padx=5, pady=5)
+        self.varFrm.columnconfigure(2, minsize=5)
+        self.varFrm.rowconfigure(12, minsize=5)
+
+        # variable field widgets
+        ttk.Label(self.varFrm, text='Identity', style='Small.TLabel').grid(
+            row=0, column=0, columnspan=2, sticky='sw')
+        self.identityEnt = ttk.Entry(
+            self.varFrm, textvariable=self.identity)
+        self.identityEnt.grid(
+            row=1, column=0, columnspan=2, sticky='sew')
+
+        ttk.Label(
+            self.varFrm, text='General Note',
+            style='Small.TLabel').grid(
+            row=2, column=0, columnspan=2, sticky='sw')
+        self.genNoteEnt = ttk.Entry(
+            self.varFrm, textvariable=self.genNote)
+        self.genNoteEnt.grid(
+            row=3, column=0, columnspan=2, sticky='sew')
+
+        ttk.Label(
+            self.varFrm, text='Internal Note',
+            style='Small.TLabel').grid(
+            row=4, column=0, columnspan=2, sticky='sw')
+        self.intNoteEnt = ttk.Entry(
+            self.varFrm, textvariable=self.intNote)
+        self.intNoteEnt.grid(
+            row=5, column=0, columnspan=2, sticky='sew')
+
+        ttk.Label(
+            self.varFrm, text='Old Order No.',
+            style='Small.TLabel').grid(
+            row=6, column=0, columnspan=2, sticky='sw')
+        self.oldOrdNoEnt = ttk.Entry(
+            self.varFrm, textvariable=self.oldOrdNo)
+        self.oldOrdNoEnt.grid(
+            row=7, column=0, columnspan=2, sticky='sew')
+
+        ttk.Label(
+            self.varFrm, text='Selector',
+            style='Small.TLabel').grid(
+            row=8, column=0, columnspan=2, sticky='sw')
+        self.selectorEnt = ttk.Entry(
+            self.varFrm, textvariable=self.selector)
+        self.selectorEnt.grid(
+            row=9, column=0, columnspan=2, sticky='sew')
+
+        ttk.Label(
+            self.varFrm, text='Vendor Addr',
+            style='Small.TLabel').grid(
+            row=10, column=0, columnspan=2, sticky='sw')
+        self.venAddrEnt = ttk.Entry(
+            self.varFrm, textvariable=self.venAddr)
+        self.venAddrEnt.grid(
+            row=11, column=0, columnspan=2, sticky='sew')
+
+        ttk.Label(
+            self.varFrm, text='Vendor Note',
+            style='Small.TLabel').grid(
+            row=0, column=3, columnspan=2, sticky='sw')
+        self.venNoteEnt = ttk.Entry(
+            self.varFrm, textvariable=self.venNote)
+        self.venNoteEnt.grid(
+            row=1, column=3, columnspan=2, sticky='sew')
+
+        ttk.Label(
+            self.varFrm, text='Vendor Title No.',
+            style='Small.TLabel').grid(
+            row=2, column=3, columnspan=2, sticky='sw')
+        self.venTitleNoEnt = ttk.Entry(
+            self.varFrm, textvariable=self.venTitleNo)
+        self.venTitleNoEnt.grid(
+            row=3, column=3, columnspan=2, sticky='sew')
+
+        ttk.Label(
+            self.varFrm, text='Blanket PO',
+            style='Small.TLabel').grid(
+            row=4, column=3, columnspan=2, sticky='sw')
+        self.blanketPOEnt = ttk.Entry(
+            self.varFrm, textvariable=self.blanketPO)
+        self.blanketPOEnt.grid(
+            row=5, column=3, columnspan=2, sticky='sew')
+
+        ttk.Label(
+            self.varFrm, text='Ship To', style='Small.TLabel').grid(
+            row=6, column=3, columnspan=2, sticky='sw')
+        self.shipToEnt = ttk.Entry(
+            self.varFrm, textvariable=self.shipTo)
+        self.shipToEnt.grid(
+            row=7, column=3, columnspan=2, sticky='sew')
+
+        ttk.Label(
+            self.varFrm, text='Requestor', style='Small.TLabel').grid(
+            row=8, column=3, columnspan=2, sticky='sw')
+        self.requestorEnt = ttk.Entry(
+            self.varFrm, textvariable=self.requestor)
+        self.requestorEnt.grid(
+            row=9, column=3, columnspan=2, sticky='sew')
+
+        ttk.Label(
+            self.varFrm, text='Paid Note', style='Small.TLabel').grid(
+            row=10, column=3, columnspan=2, sticky='sw')
+        self.paidNoteEnt = ttk.Entry(
+            self.varFrm, textvariable=self.paidNote)
+        self.paidNoteEnt.grid(
+            row=11, column=3, columnspan=2, sticky='sew')
+
+        # sierra bibliographic format frame
+        self.bibFrm = ttk.LabelFrame(
+            self.top, text='Sierra bibliographic format')
+        self.bibFrm.grid(
+            row=20, column=4, columnspan=11, sticky='snew', padx=10, pady=10)
+        self.bibFrm.rowconfigure(2, minsize=5)
+
+        ttk.Label(
+            self.bibFrm, text='Bib Form', style='Small.TLabel').grid(
+            row=0, column=0, sticky='sw')
+        self.bFormCbx = ttk.Combobox(
+            self.bibFrm, textvariable=self.bForm)
+        self.bFormCbx.grid(
+            row=1, column=0, sticky='sew')
+
+        # bottom buttons
+        # button's frame
+        # self.btnFrm = ttk.Frame(
+        #     self.top)
+        # self.btnFrm.grid(
+        #     row=22, column=1, columnspan=12, padx=10, pady=10)
+        # self.btnFrm.columnconfigure(0, minsize=200)
+        # self.btnFrm.columnconfigure(1, minsize=10)
+        # self.btnFrm.columnconfigure(2, minsize=5)
+
+        self.newBtn = ttk.Button(
+            self.top,
+            text='new',
+            command=self.create_template)
+        self.newBtn.grid(
+            row=22, column=1, columnspan=3, sticky='swe', padx=50, pady=5)
+
+        self.saveBtn = ttk.Button(
+            self.top,
+            text='save',
+            # width=8,
+            command=self.save_template)
+        self.saveBtn.grid(
+            row=22, column=4, sticky='nwe', padx=10, pady=5)
+
+        self.deleteBtn = ttk.Button(
+            self.top,
+            text='delete',
+            # width=8,
+            command=self.delete_template)
+        self.deleteBtn.grid(
+            row=22, column=6, sticky='nwe', padx=10, pady=5)
+
+        self.helpBtn = ttk.Button(
+            self.top,
+            text='help',
+            # width=8,
+            command=self.help)
+        self.helpBtn.grid(
+            row=22, column=10, sticky='nwe', padx=10, pady=5)
+
+        self.closeBtn = ttk.Button(
+            self.top,
+            text='close',
+            # width=8,
+            command=self.top.destroy)
+        self.closeBtn.grid(
+            row=22, column=13, sticky='nwe', padx=10, pady=5)
+
+    def show_details(self):
+        print 'showing details'
+
+    def create_template(self):
+        print 'creating new template'
+
+    def save_template(self):
+        print 'saving'
+
+    def delete_template(self):
+        print 'deleting'
+
+    def help(self):
+        print 'helping'
+
+
 class ProcessVendorFiles(tk.Frame):
     """
     GUI to processing vendor files module which preprocesses records
@@ -410,9 +788,10 @@ class ProcessVendorFiles(tk.Frame):
             'Stay tuned...')
 
     def create_template(self):
-        tkMessageBox.showwarning(
-            'Under construction', 'Feature not implemented yet.\n'
-            'Stay tuned...')
+        # tkMessageBox.showwarning(
+        #     'Under construction', 'Feature not implemented yet.\n'
+        #     'Stay tuned...')
+        OrderTemplate(self)
 
     def process(self):
         self.reset()
