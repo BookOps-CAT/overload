@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # defines control vocabulares used in Sierra records
 
 # nypl acq types
@@ -287,8 +288,6 @@ COUNTRIES = {
 
     "cm ": "Cameroon",
 
-    "-cn": "Canada",
-
     "co ": "Curaçao",
 
     "cou": "Colorado",
@@ -296,8 +295,6 @@ COUNTRIES = {
     "cq ": "Comoros",
 
     "cr ": "Costa Rica",
-
-    "-cs": "Czechoslovakia",
 
     "ctu": "Connecticut",
 
@@ -846,4 +843,37 @@ COUNTRIES = {
     "ykc": "Yukon Territory",
 
     "za ": "Zambia",
+}
+
+
+N_MATFORM = {
+    'p': 'archiwal mix',
+    'm': 'computer file',
+    'z': 'ebook',
+    'x': 'game',
+    't': 'manuscript',
+    'h': 'microform',
+    'j': 'music non-cd',
+    'i': 'spoken word',
+    'r': '3-d object',
+    '7': 'teacher audio',
+    'u': 'audiobook',
+    'v': 'dvd',
+    '3': 'e-video',
+    'o': 'kit',
+    'd': 'mauscript mus',
+    '-': 'misc',
+    'k': 'picture',
+    's': 'vhs',
+    '8': 'teacher set',
+    '4': 'tablet',
+    'a': 'book/text',
+    'n': 'e-audiobook',
+    'g': 'film,slicde,etc',
+    'l': 'large print',
+    'e': 'map',
+    'y': 'music cd',
+    'c': 'score',
+    'w': 'web resource',
+    'b': 'blu-ray'
 }
