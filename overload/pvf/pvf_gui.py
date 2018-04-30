@@ -18,14 +18,18 @@ import overload_help
 import reports
 from errors import OverloadError
 from manager import run_processing, save_stats
+from datastore import NYPLOrderTemplate, session_scope
+from db_worker import retrieve_values
 from setup_dirs import MY_DOCS, USER_DATA, CVAL_REP, \
     BATCH_META, BATCH_STATS
+import bibs.sierra_dicts as sd
 
 
 module_logger = logging.getLogger('overload_console.pvr_gui')
 
 
 class OrderTemplate(tk.Frame):
+    """GUI for selection order templates"""
     def __init__(self, parent):
         self.parent = parent
         tk.Frame.__init__(self, self.parent, background='white')
@@ -60,15 +64,13 @@ class OrderTemplate(tk.Frame):
         self.shipTo = tk.StringVar()
         self.requestor = tk.StringVar()
         self.paidNote = tk.StringVar()
-        self.bForm = tk.StringVar()
+        self.bibMatForm = tk.StringVar()
 
         # layout of the main frame
         self.top.columnconfigure(0, minsize=5)
         self.top.columnconfigure(1, minsize=200)
-        # self.top.columnconfigure(7, minsize=5)
         self.top.columnconfigure(9, minsize=5)
         self.top.columnconfigure(15, minsize=5)
-        # self.top.rowconfigure(19, minsize=5)
         self.top.rowconfigure(21, minsize=5)
         self.top.rowconfigure(23, minsize=10)
 
@@ -331,23 +333,15 @@ class OrderTemplate(tk.Frame):
         self.bibFrm.rowconfigure(2, minsize=5)
 
         ttk.Label(
-            self.bibFrm, text='Bib Form', style='Small.TLabel').grid(
-            row=0, column=0, sticky='sw')
-        self.bFormCbx = ttk.Combobox(
-            self.bibFrm, textvariable=self.bForm)
-        self.bFormCbx.grid(
+            self.bibFrm, text='Bib Material Form',
+            style='Small.TLabel').grid(
+            row=0, column=0, columnspan=2, sticky='sw')
+        self.bibMatFormCbx = ttk.Combobox(
+            self.bibFrm, textvariable=self.bibMatForm)
+        self.bibMatFormCbx.grid(
             row=1, column=0, sticky='sew')
 
         # bottom buttons
-        # button's frame
-        # self.btnFrm = ttk.Frame(
-        #     self.top)
-        # self.btnFrm.grid(
-        #     row=22, column=1, columnspan=12, padx=10, pady=10)
-        # self.btnFrm.columnconfigure(0, minsize=200)
-        # self.btnFrm.columnconfigure(1, minsize=10)
-        # self.btnFrm.columnconfigure(2, minsize=5)
-
         self.newBtn = ttk.Button(
             self.top,
             text='new',
@@ -387,20 +381,110 @@ class OrderTemplate(tk.Frame):
         self.closeBtn.grid(
             row=22, column=13, sticky='nwe', padx=10, pady=5)
 
+        self.update_template_lst()
+        self.populate_cbxs()
+
     def show_details(self):
         print 'showing details'
 
     def create_template(self):
-        print 'creating new template'
+        self.reset()
 
     def save_template(self):
         print 'saving'
 
     def delete_template(self):
         print 'deleting'
+        self.reset()
 
     def help(self):
         print 'helping'
+
+    def update_template_lst(self):
+        self.templateLst.delete(0, tk.END)
+        with session_scope() as session:
+            names = retrieve_values(session, NYPLOrderTemplate, 'tName')
+            for name in names:
+                self.templateLst.insert(tk.END, name)
+
+    def populate_cbxs(self):
+        # unblock comoboxes
+        for child in self.fixedFrm.winfo_children():
+            if child.winfo_class() == 'TCombobox':
+                child['state'] = '!readonly'
+        # populate with values
+        self.acqTypeCbx['values'] = [
+            '{} ({})'.format(x, y) for x, y in sorted(
+                sd.NACQ_TYPE.iteritems())]
+        self.claimCbx['values'] = [
+            '{} ({})'.format(x, y) for x, y in sorted(
+                sd.NCLAIM.iteritems())]
+        self.oCode1Cbx['values'] = [
+            '{} ({})'.format(x, y) for x, y in sorted(
+                sd.NORDER_CODE1.iteritems())]
+        self.oCode2Cbx['values'] = [
+            '{} ({})'.format(x, y) for x, y in sorted(
+                sd.NORDER_CODE2.iteritems())]
+        self.oCode3Cbx['values'] = [
+            '{} ({})'.format(x, y) for x, y in sorted(
+                sd.NORDER_CODE3.iteritems())]
+        self.oCode4Cbx['values'] = [
+            '{} ({})'.format(x, y) for x, y in sorted(
+                sd.NORDER_CODE4.iteritems())]
+        self.oFormCbx['values'] = [
+            '{} ({})'.format(x, y) for x, y in sorted(
+                sd.N_OFORM.iteritems())]
+        self.oTypeCbx['values'] = [
+            '{} ({})'.format(x, y) for x, y in sorted(
+                sd.NORDER_TYPE.iteritems())]
+        self.oNoteCbx['values'] = [
+            '{} ({})'.format(x, y) for x, y in sorted(
+                sd.NORDER_NOTE.iteritems())]
+        self.langCbx['values'] = [
+            '{} ({})'.format(x, y) for x, y in sorted(
+                sd.LANG.iteritems())]
+        self.countryCbx['values'] = [
+            '{} ({})'.format(x, y) for x, y in sorted(
+                sd.COUNTRIES.iteritems())]
+
+        # block comboboxes
+        for child in self.fixedFrm.winfo_children():
+            if child.winfo_class() == 'TCombobox':
+                child['state'] = 'readonly'
+
+        self.bibMatFormCbx['state'] = '!readonly'
+        self.bibMatFormCbx['values'] = [
+            '{} ({})'.format(x, y) for x, y in sorted(
+                sd.N_MATFORM.iteritems())]
+        self.bibMatFormCbx['state'] = 'readonly'
+
+    def reset(self):
+        self.template_name.set('')
+        self.acqType.set('')
+        self.claim.set('')
+        self.oCode1.set('')
+        self.oCode2.set('')
+        self.oCode3.set('')
+        self.oCode4.set('')
+        self.oForm.set('')
+        self.oNote.set('')
+        self.oType.set('')
+        self.vendor.set('')
+        self.lang.set('')
+        self.country.set('')
+        self.identity.set('')
+        self.genNote.set('')
+        self.intNote.set('')
+        self.oldOrdNo.set('')
+        self.selector.set('')
+        self.venAddr.set('')
+        self.venNote.set('')
+        self.venTitleNo.set('')
+        self.blanketPO.set('')
+        self.shipTo.set('')
+        self.requestor.set('')
+        self.paidNote.set('')
+        self.bibMatForm.set('')
 
 
 class ProcessVendorFiles(tk.Frame):
