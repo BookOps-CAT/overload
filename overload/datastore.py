@@ -77,6 +77,7 @@ class NYPLOrderTemplate(Base):
 
     __tablename__ = 'NyplOrderTemplate'
     otid = Column(Integer, primary_key=True)
+    tName = Column(String, nullable=False, unique=True)
     acqType = Column(String)
     claim = Column(String)
     code1 = Column(String)
