@@ -23,6 +23,6 @@ def insert_or_ignore(session, model, **kwargs):
 
 def retrieve_values(session, model, *args, **kwargs):
     instances = session.query(model).filter_by(**kwargs).options(
-        load_only(*args)).order_by(model.timestamp.desc()).all()
+        load_only(*args)).all()
     session.close()
     return instances
