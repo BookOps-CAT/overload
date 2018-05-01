@@ -106,20 +106,21 @@ class NYPLOrderTemplate(Base):
     bibFormat = Column(String)  # sets Sierra record format; is this needed?
 
     def __repr__(self):
-        return "<NyplOrderTemplate(otid='%s', acqType='%s', claim='%s', " \
-            "code1='%s', code2='%s', code3='%s', code4='%s', form='%s', " \
-            "orderType='%s', orderNote='%s', status='%s', " \
+        return "<NyplOrderTemplate(otid='%s', tName='%s', acqType='%s', " \
+            "claim='%s', code1='%s', code2='%s', code3='%s', code4='%s', " \
+            "form='%s', orderType='%s', orderNote='%s', status='%s', " \
             "vendor='%s', lang='%s', country='%s', identity='%s', " \
             "generalNote='%s', internalNote='%s', oldOrdNo='%s', " \
             "selector='%s', venAddr='%s', venNote='%s', venTitleNo='%s', " \
             "blanketPO='%s', paidNote='%s', shipTo='%s', requestor='%s', " \
             "bibFormat='%s')>" % (
-                self.otid, self.acqType, self.claim,
-                self.orderType, self.orderNote, self.status,
+                self.otid, self.tName, self.acqType, self.claim,
+                self.code1, self.code2, self.code3, self.code4,
+                self.form, self.orderType, self.orderNote, self.status,
                 self.vendor, self.lang, self.country,
                 self.identity, self.generalNote, self.internalNote,
                 self.oldOrdNo, self.selector, self.venAddr, self.venNote,
-                self.venTitleNo, self.balnketPO, self.paidNote, self.shipTo,
+                self.venTitleNo, self.blanketPO, self.paidNote, self.shipTo,
                 self.requestor, self.bibFormat
             )
 
