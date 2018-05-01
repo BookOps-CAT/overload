@@ -3,6 +3,7 @@
 from datetime import datetime, date
 import shelve
 import logging
+from sqlalchemy.exc import IntegrityError
 # from requests.exceptions import ConnectionError, Timeout
 
 
@@ -15,10 +16,11 @@ from pvf.vendors import vendor_index, identify_vendor, get_query_matchpoint
 from pvf import reports
 from analyzer import PVR_NYPLReport
 from setup_dirs import BATCH_STATS, BATCH_META
-from errors import OverloadError, APITokenExpiredError, APITokenError
+from errors import OverloadError, APITokenExpiredError
 from datastore import session_scope, Vendor, \
-    PVR_Batch, PVR_File
-from db_worker import insert_or_ignore
+    PVR_Batch, PVR_File, NYPLOrderTemplate
+from db_worker import insert_or_ignore, retrieve_values, \
+    retrieve_record, update_nypl_template, delete_record
 
 
 module_logger = logging.getLogger('overload_console.pvr_manager')
@@ -366,3 +368,21 @@ def save_stats():
             'Unable to created dataframe from the BATCH_STATS.')
         raise OverloadError(
             'Encountered problems while trying to save statistics.')
+
+
+def save_template(record):
+    try:
+        with session_scope() as session:
+            insert_or_ignore(session, NYPLOrderTemplate, **record)
+    except IntegrityError:
+        raise OverloadError('Duplicate or missing template name')
+
+
+def update_template(otid, record):
+    with session_scope() as session:
+        update_nypl_template(session, otid, **record)
+
+
+def delete_template(otid):
+    with session_scope() as session:
+        delete_record(session, NYPLOrderTemplate, otid=otid)
