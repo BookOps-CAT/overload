@@ -17,9 +17,10 @@ from gui_utils import ToolTip, BusyManager
 import overload_help
 import reports
 from errors import OverloadError
-from manager import run_processing, save_stats
+from manager import run_processing, save_stats, save_template, \
+    update_template, delete_template
 from datastore import NYPLOrderTemplate, session_scope
-from db_worker import retrieve_values
+from db_worker import retrieve_values, retrieve_record
 from setup_dirs import MY_DOCS, USER_DATA, CVAL_REP, \
     BATCH_META, BATCH_STATS
 import bibs.sierra_dicts as sd
@@ -39,6 +40,7 @@ class OrderTemplate(tk.Frame):
         self.top.title('Record Templates')
 
         # variables
+        self.otid = tk.IntVar()
         self.template_name = tk.StringVar()
         self.acqType = tk.StringVar()
         self.claim = tk.StringVar()
@@ -83,7 +85,7 @@ class OrderTemplate(tk.Frame):
         self.templateLst = tk.Listbox(
             self.top,
             yscrollcommand=scrollbar.set)
-        self.templateLst.bind('<Double-Button-1>', self.show_details)
+        self.templateLst.bind('<Any-Button-1>', self.show_details)
         self.templateLst.grid(
             row=1, column=1, sticky='snew', rowspan=20, pady=10)
         scrollbar['command'] = self.templateLst.yview
@@ -188,7 +190,7 @@ class OrderTemplate(tk.Frame):
             self.fixedFrm, text='Vendor',
             style='Small.TLabel').grid(
             row=6, column=3, columnspan=2, sticky='sw')
-        self.vendorCbx = ttk.Combobox(
+        self.vendorCbx = ttk.Entry(
             self.fixedFrm, textvariable=self.vendor)
         self.vendorCbx.grid(
             row=7, column=3, columnspan=2, sticky='sew')
@@ -345,7 +347,7 @@ class OrderTemplate(tk.Frame):
         self.newBtn = ttk.Button(
             self.top,
             text='new',
-            command=self.create_template)
+            command=self.reset)
         self.newBtn.grid(
             row=22, column=1, columnspan=3, sticky='swe', padx=50, pady=5)
 
@@ -384,18 +386,177 @@ class OrderTemplate(tk.Frame):
         self.update_template_lst()
         self.populate_cbxs()
 
-    def show_details(self):
-        print 'showing details'
-
-    def create_template(self):
+    def show_details(self, *args):
         self.reset()
+        name = self.templateLst.get(tk.ACTIVE)
+
+        with session_scope() as session:
+            t = retrieve_record(
+                session, NYPLOrderTemplate, tName=name)
+            self.template_name.set(t.tName)
+            self.otid.set(t.otid)
+
+            if t.acqType is not None:
+                self.acqType.set(
+                    '{} ({})'.format(t.acqType, sd.NACQ_TYPE[t.acqType]))
+            if t.claim is not None:
+                self.claim.set(
+                    '{} ({})'.format(t.claim, sd.NCLAIM[t.claim]))
+            if t.code1 is not None:
+                self.oCode1.set(
+                    '{} ({})'.format(t.code1, sd.NORDER_CODE1[t.code1]))
+            if t.code2 is not None:
+                self.oCode2.set(
+                    '{} ({})'.format(t.code2, sd.NORDER_CODE2[t.code2]))
+            if t.code3 is not None:
+                self.oCode3.set(
+                    '{} ({})'.format(t.code3, sd.NORDER_CODE3[t.code3]))
+            if t.code4 is not None:
+                self.oCode4.set(
+                    '{} ({})'.format(t.code4, sd.NORDER_CODE4[t.code4]))
+            if t.form is not None:
+                self.oForm.set(
+                    '{} ({})'.format(t.form, sd.N_OFORM[t.form]))
+            if t.orderType is not None:
+                self.oType.set(
+                    '{} ({})'.format(t.orderType, sd.NORDER_TYPE[t.orderType]))
+            if t.orderNote is not None:
+                self.oNote.set(
+                    '{} ({})'.format(t.orderNote, sd.NORDER_NOTE[t.orderNote]))
+            if t.lang is not None:
+                self.lang.set(
+                    '{} ({})'.format(t.lang, sd.LANG[t.lang]))
+            if t.country is not None:
+                self.country.set(
+                    '{} ({})'.format(t.country, sd.COUNTRIES[t.country]))
+
+            if t.vendor is not None:
+                self.vendor.set(t.vendor)
+            if t.identity is not None:
+                self.identity.set(t.identity)
+            if t.generalNote is not None:
+                self.genNote.set(t.generalNote)
+            if t.internalNote is not None:
+                self.intNote.set(t.internalNote)
+            if t.oldOrdNo is not None:
+                self.oldOrdNo.set(t.oldOrdNo)
+            if t.selector is not None:
+                self.selector.set(t.selector)
+            if t.venAddr is not None:
+                self.venAddr.set(t.venAddr)
+            if t.venNote is not None:
+                self.venNote.set(t.venNote)
+            if t.blanketPO is not None:
+                self.blanketPO.set(t.blanketPO)
+            if t.venTitleNo is not None:
+                self.venTitleNo.set(t.venTitleNo)
+            if t.paidNote is not None:
+                self.paidNote.set(t.paidNote)
+            if t.shipTo is not None:
+                self.shipTo.set(t.shipTo)
+            if t.requestor is not None:
+                self.requestor.set(t.requestor)
+            if t.bibFormat is not None:
+                self.bibMatForm.set(t.bibFormat)
 
     def save_template(self):
-        print 'saving'
+        record = dict()
+        print len(self.country.get())
+
+        # fixed fields
+        f = dict(
+            tName=self.template_name.get().strip(),
+            acqType=self.acqType.get(),
+            claim=self.claim.get(),
+            code1=self.oCode1.get(),
+            code2=self.oCode2.get(),
+            code3=self.oCode3.get(),
+            code4=self.oCode4.get(),
+            form=self.oForm.get(),
+            orderNote=self.oNote.get(),
+            orderType=self.oType.get(),
+            lang=self.lang.get(),
+            country=self.country.get(),
+            bibFormat=self.bibMatForm.get()
+        )
+
+        for key, value in f.iteritems():
+            if value == '':
+                value = None
+            else:
+                if key == 'country':
+                    value = value.split(' (')[0]
+                else:
+                    value = value.split('(')[0].strip()
+            record[key] = value
+
+        v = dict(
+            vendor=self.vendor.get().strip(),
+            identity=self.identity.get().strip(),
+            generalNote=self.genNote.get().strip(),
+            internalNote=self.intNote.get().strip(),
+            oldOrdNo=self.oldOrdNo.get().strip(),
+            selector=self.selector.get().strip(),
+            venAddr=self.venAddr.get().strip(),
+            venNote=self.venNote.get().strip(),
+            venTitleNo=self.venTitleNo.get().strip(),
+            blanketPO=self.blanketPO.get().strip(),
+            shipTo=self.shipTo.get().strip(),
+            requestor=self.requestor.get().strip(),
+            paidNote=self.paidNote.get().strip(),
+        )
+
+        for key, value in v.iteritems():
+            if value == '':
+                value = None
+            record[key] = value
+
+        # determine if new record or update
+        if self.otid.get() != 0:
+            # existing template
+            proceed = tkMessageBox.askokcancel(
+                'Templates',
+                'Modify existing template?',
+                parent=self.top)
+            if proceed:
+                # update
+                try:
+                    update_template(self.otid.get(), record)
+                    tkMessageBox.showinfo(
+                        'Info', 'Template successfully saved.',
+                        parent=self.top)
+                except OverloadError as e:
+                    tkMessageBox.showerror(
+                        'Data Error',
+                        e,
+                        parent=self.top)
+        else:
+            # new template
+            try:
+                save_template(record)
+                tkMessageBox.showinfo(
+                    'Info', 'Template successfully saved.',
+                    parent=self.top)
+                # reset the form
+                self.reset()
+            except OverloadError as e:
+                tkMessageBox.showerror(
+                    'Data error', e,
+                    parent=self.top)
+
+        # update template list
+        self.update_template_lst()
 
     def delete_template(self):
-        print 'deleting'
-        self.reset()
+        proceed = tkMessageBox.askyesno(
+            'Template Deletion',
+            'You are about to delete\n{}\nProceed?'.format(
+                self.template_name.get()),
+            parent=self.top)
+        if proceed:
+            delete_template(self.otid.get())
+            self.reset()
+            self.update_template_lst()
 
     def help(self):
         print 'helping'
@@ -404,6 +565,7 @@ class OrderTemplate(tk.Frame):
         self.templateLst.delete(0, tk.END)
         with session_scope() as session:
             names = retrieve_values(session, NYPLOrderTemplate, 'tName')
+            names = sorted(['{}.{}'.format(x.otid, x.tName) for x in names])
             for name in names:
                 self.templateLst.insert(tk.END, name)
 
@@ -412,40 +574,52 @@ class OrderTemplate(tk.Frame):
         for child in self.fixedFrm.winfo_children():
             if child.winfo_class() == 'TCombobox':
                 child['state'] = '!readonly'
+
         # populate with values
         self.acqTypeCbx['values'] = [
             '{} ({})'.format(x, y) for x, y in sorted(
                 sd.NACQ_TYPE.iteritems())]
+        self.acqTypeCbx['values'] = self.acqTypeCbx['values'] + ('', )
         self.claimCbx['values'] = [
             '{} ({})'.format(x, y) for x, y in sorted(
                 sd.NCLAIM.iteritems())]
+        self.claimCbx['values'] = self.claimCbx['values'] + ('', )
         self.oCode1Cbx['values'] = [
             '{} ({})'.format(x, y) for x, y in sorted(
                 sd.NORDER_CODE1.iteritems())]
+        self.oCode1Cbx['values'] = self.oCode1Cbx['values'] + ('', )
         self.oCode2Cbx['values'] = [
             '{} ({})'.format(x, y) for x, y in sorted(
                 sd.NORDER_CODE2.iteritems())]
+        self.oCode2Cbx['values'] = self.oCode2Cbx['values'] + ('', )
         self.oCode3Cbx['values'] = [
             '{} ({})'.format(x, y) for x, y in sorted(
                 sd.NORDER_CODE3.iteritems())]
+        self.oCode3Cbx['values'] = self.oCode3Cbx['values'] + ('', )
         self.oCode4Cbx['values'] = [
             '{} ({})'.format(x, y) for x, y in sorted(
                 sd.NORDER_CODE4.iteritems())]
+        self.oCode4Cbx['values'] = self.oCode4Cbx['values'] + ('', )
         self.oFormCbx['values'] = [
             '{} ({})'.format(x, y) for x, y in sorted(
                 sd.N_OFORM.iteritems())]
+        self.oFormCbx['values'] = self.oFormCbx['values'] + ('', )
         self.oTypeCbx['values'] = [
             '{} ({})'.format(x, y) for x, y in sorted(
                 sd.NORDER_TYPE.iteritems())]
+        self.oTypeCbx['values'] = self.oTypeCbx['values'] + ('', )
         self.oNoteCbx['values'] = [
             '{} ({})'.format(x, y) for x, y in sorted(
                 sd.NORDER_NOTE.iteritems())]
+        self.oNoteCbx['values'] = self.oNoteCbx['values'] + ('', )
         self.langCbx['values'] = [
             '{} ({})'.format(x, y) for x, y in sorted(
                 sd.LANG.iteritems())]
+        self.langCbx['values'] = self.langCbx['values'] + ('', )
         self.countryCbx['values'] = [
             '{} ({})'.format(x, y) for x, y in sorted(
                 sd.COUNTRIES.iteritems())]
+        self.countryCbx['values'] = self.countryCbx['values'] + ('', )
 
         # block comboboxes
         for child in self.fixedFrm.winfo_children():
@@ -456,9 +630,11 @@ class OrderTemplate(tk.Frame):
         self.bibMatFormCbx['values'] = [
             '{} ({})'.format(x, y) for x, y in sorted(
                 sd.N_MATFORM.iteritems())]
+        self.bibMatFormCbx['values'] = self.bibMatFormCbx['values'] + ('', )
         self.bibMatFormCbx['state'] = 'readonly'
 
     def reset(self):
+        self.otid.set(0)
         self.template_name.set('')
         self.acqType.set('')
         self.claim.set('')
