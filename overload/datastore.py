@@ -104,6 +104,9 @@ class NYPLOrderTemplate(Base):
     shipTo = Column(String)
     requestor = Column(String)
     bibFormat = Column(String)  # sets Sierra record format; is this needed?
+    match1st = Column(String, nullable=False)
+    match2nd = Column(String)
+    match3rd = Column(String)
 
     def __repr__(self):
         return "<NyplOrderTemplate(otid='%s', tName='%s', acqType='%s', " \
@@ -113,7 +116,7 @@ class NYPLOrderTemplate(Base):
             "generalNote='%s', internalNote='%s', oldOrdNo='%s', " \
             "selector='%s', venAddr='%s', venNote='%s', venTitleNo='%s', " \
             "blanketPO='%s', paidNote='%s', shipTo='%s', requestor='%s', " \
-            "bibFormat='%s')>" % (
+            "bibFormat='%s, match1st='%s', match2nd='%s', match3rd='%s')>" % (
                 self.otid, self.tName, self.acqType, self.claim,
                 self.code1, self.code2, self.code3, self.code4,
                 self.form, self.orderType, self.orderNote, self.status,
@@ -121,7 +124,8 @@ class NYPLOrderTemplate(Base):
                 self.identity, self.generalNote, self.internalNote,
                 self.oldOrdNo, self.selector, self.venAddr, self.venNote,
                 self.venTitleNo, self.blanketPO, self.paidNote, self.shipTo,
-                self.requestor, self.bibFormat
+                self.requestor, self.bibFormat, self.match1st, self.match2nd,
+                self.match3rd
             )
 
 
