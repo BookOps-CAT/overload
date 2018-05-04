@@ -18,9 +18,9 @@ import overload_help
 import reports
 from errors import OverloadError
 from manager import run_processing, save_stats, save_template, \
-    update_template, delete_template
+    update_template, delete_template, get_template_names
 from datastore import NYPLOrderTemplate, session_scope
-from db_worker import retrieve_values, retrieve_record
+from db_worker import retrieve_record
 from setup_dirs import MY_DOCS, USER_DATA, CVAL_REP, \
     BATCH_META, BATCH_STATS
 import bibs.sierra_dicts as sd
@@ -67,6 +67,9 @@ class OrderTemplate(tk.Frame):
         self.requestor = tk.StringVar()
         self.paidNote = tk.StringVar()
         self.bibMatForm = tk.StringVar()
+        self.primary_match = tk.StringVar()
+        self.secondary_match = tk.StringVar()
+        self.tertiary_match = tk.StringVar()
 
         # layout of the main frame
         self.top.columnconfigure(0, minsize=5)
@@ -84,8 +87,9 @@ class OrderTemplate(tk.Frame):
             row=1, column=2, sticky='nsw', rowspan=20, padx=2, pady=10)
         self.templateLst = tk.Listbox(
             self.top,
+            selectmode=tk.SINGLE,
             yscrollcommand=scrollbar.set)
-        self.templateLst.bind('<Any-Button-1>', self.show_details)
+        self.templateLst.bind('<<ListboxSelect>>', self.show_details)
         self.templateLst.grid(
             row=1, column=1, sticky='snew', rowspan=20, pady=10)
         scrollbar['command'] = self.templateLst.yview
@@ -329,19 +333,58 @@ class OrderTemplate(tk.Frame):
 
         # sierra bibliographic format frame
         self.bibFrm = ttk.LabelFrame(
-            self.top, text='Sierra bibliographic format')
+            self.top, text='Sierra bib format')
         self.bibFrm.grid(
-            row=20, column=4, columnspan=11, sticky='snew', padx=10, pady=10)
+            row=20, column=4, sticky='snew', padx=10, pady=10)
         self.bibFrm.rowconfigure(2, minsize=5)
 
         ttk.Label(
-            self.bibFrm, text='Bib Material Form',
+            self.bibFrm, text='Material Form',
             style='Small.TLabel').grid(
             row=0, column=0, columnspan=2, sticky='sw')
         self.bibMatFormCbx = ttk.Combobox(
             self.bibFrm, textvariable=self.bibMatForm)
         self.bibMatFormCbx.grid(
             row=1, column=0, sticky='sew')
+
+        # matchpoints frame
+        self.matchFrm = ttk.LabelFrame(
+            self.top, text='Sierra Matchpoints')
+        self.matchFrm.grid(
+            row=20, column=6, columnspan=9, sticky='snew', padx=10, pady=10)
+
+        ttk.Label(
+            self.matchFrm, text='primary',
+            style='Small.TLabel').grid(
+            row=0, column=0, sticky='sw', padx=10)
+        self.primaryCbx = ttk.Combobox(
+            self.matchFrm, postcommand=self.list_available_matches,
+            textvariable=self.primary_match)
+        self.primaryCbx.grid(
+            row=1, column=0, sticky='sew', padx=10)
+        self.primaryCbx['state'] = 'readonly'
+
+        ttk.Label(
+            self.matchFrm, text='seconary',
+            style='Small.TLabel').grid(
+            row=0, column=2, sticky='sw', padx=10)
+        self.secondaryCbx = ttk.Combobox(
+            self.matchFrm, postcommand=self.list_available_matches,
+            textvariable=self.secondary_match)
+        self.secondaryCbx.grid(
+            row=1, column=2, sticky='sew', padx=10)
+        self.secondaryCbx['state'] = 'readonly'
+
+        ttk.Label(
+            self.matchFrm, text='tertiary',
+            style='Small.TLabel').grid(
+            row=0, column=4, sticky='sw', padx=10)
+        self.tertiaryCbx = ttk.Combobox(
+            self.matchFrm, postcommand=self.list_available_matches,
+            textvariable=self.tertiary_match)
+        self.tertiaryCbx.grid(
+            row=1, column=4, sticky='sew', padx=10)
+        self.tertiaryCbx['state'] = 'readonly'
 
         # bottom buttons
         self.newBtn = ttk.Button(
@@ -388,7 +431,7 @@ class OrderTemplate(tk.Frame):
 
     def show_details(self, *args):
         self.reset()
-        name = self.templateLst.get(tk.ACTIVE)
+        name = self.templateLst.get(self.templateLst.curselection())
 
         with session_scope() as session:
             t = retrieve_record(
@@ -558,16 +601,43 @@ class OrderTemplate(tk.Frame):
             self.reset()
             self.update_template_lst()
 
+    def list_available_matches(self):
+        available_matches = ['sierra_id', '001', '020', '024']
+        if self.primary_match.get() in available_matches:
+            available_matches.remove(self.primary_match.get())
+        if self.secondary_match.get() in available_matches:
+            available_matches.remove(self.secondary_match.get())
+        if self.tertiary_match.get() in available_matches:
+            available_matches.remove(self.tertiary_match.get())
+        self.primaryCbx['values'] = available_matches
+        self.secondaryCbx['values'] = available_matches
+        self.tertiaryCbx['values'] = available_matches
+
     def help(self):
-        print 'helping'
+        text = overload_help.open_help(
+            'pvr_templates_help.txt')
+        help_popup = tk.Toplevel(background='white')
+        help_popup.iconbitmap('./icons/help.ico')
+        yscrollbar = tk.Scrollbar(help_popup, orient=tk.VERTICAL)
+        yscrollbar.grid(
+            row=0, column=1, rowspan=10, sticky='nsw', padx=2)
+        helpTxt = tk.Text(
+            help_popup,
+            background='white',
+            relief=tk.FLAT,
+            yscrollcommand=yscrollbar.set)
+        helpTxt.grid(
+            row=0, column=0, sticky='snew', padx=10, pady=10)
+        yscrollbar.config(command=helpTxt.yview)
+        for line in text:
+            helpTxt.insert(tk.END, line)
+        helpTxt['state'] = tk.DISABLED
 
     def update_template_lst(self):
         self.templateLst.delete(0, tk.END)
-        with session_scope() as session:
-            names = retrieve_values(session, NYPLOrderTemplate, 'tName')
-            names = sorted(['{}.{}'.format(x.otid, x.tName) for x in names])
-            for name in names:
-                self.templateLst.insert(tk.END, name)
+        names = get_template_names()
+        for name in names:
+            self.templateLst.insert(tk.END, name)
 
     def populate_cbxs(self):
         # unblock comoboxes
@@ -791,6 +861,7 @@ class ProcessVendorFiles(tk.Frame):
             row=2, column=0, columnspan=2, sticky='snew')
         self.templateCbx = ttk.Combobox(
             self.targetFrm,
+            postcommand=self.list_templates,
             textvariable=self.template)
         self.templateCbx.grid(
             row=2, column=2, columnspan=5, sticky='sew', padx=5, pady=10)
@@ -1047,6 +1118,11 @@ class ProcessVendorFiles(tk.Frame):
             'Under construction', 'Feature not implemented yet.\n'
             'Stay tuned...')
 
+    def list_templates(self):
+        names = get_template_names()
+        self.templateCbx['values'] = names
+        self.templateCbx['state'] = 'readonly'
+
     def create_template(self):
         # tkMessageBox.showwarning(
         #     'Under construction', 'Feature not implemented yet.\n'
@@ -1152,6 +1228,12 @@ class ProcessVendorFiles(tk.Frame):
             missing_params.append(
                 'Please select a directory to output processed files')
 
+        if self.agent.get() in ('selection', 'acquisition') and \
+                self.template.get() == '':
+            required_params = False
+            missing_params.append(
+                'Selection and Acquisition users must specify the template')
+
         if not required_params:
             tkMessageBox.showwarning(
                 'Missing parameters', '\n '.join(missing_params))
@@ -1212,12 +1294,17 @@ class ProcessVendorFiles(tk.Frame):
                 valid_files = True
 
             if legal_files and valid_files:
+                if self.template.get() == '':
+                    template = None
+                else:
+                    template = self.template.get()
 
                 try:
                     run_processing(
                         self.files, self.system.get().lower(),
                         self.library.get(), self.agent.get()[:3],
                         self.target['method'], self.target['target'],
+                        template,
                         self.last_directory,
                         self.progbar)
 
