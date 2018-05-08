@@ -135,6 +135,381 @@ def count_bibs(file):
         raise
 
 
+def template_to_960(template, vendor_960):
+    """"passed attr must be an instance of NYPLOrderTemplate"""
+
+    # order fixed fields mapping
+    try:
+        vsub = vendor_960.subfields
+        # subfields present on the vendor record
+        ven_subs = set([vsub[x] for x in range(0, len(vsub), 2)])
+
+    except AttributeError:
+        vsub = None
+        ven_subs = set()
+
+    # list of relevalnt to PVR subfields of 960
+    pvr_subs = set(
+        ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'm',
+        'v', 'w', 'x'])
+
+    # find extra subfield to be carried over to the new field
+    nsub = []
+    diff_subs = ven_subs - pvr_subs
+    for s in diff_subs:
+        nsub.extend(
+            [vsub[vsub.index(s)], vsub[vsub.index(s) + 1]])
+
+    try:
+        if template.acqType:
+            nsub.extend(['a', template.acqType])
+        else:
+            nsub.extend([
+                'a',
+                vsub[vsub.index('a') + 1]])
+    except AttributeError:
+        pass
+    except ValueError:
+        pass
+
+    try:
+        if template.claim:
+            nsub.extend(['b', template.claim])
+        else:
+            nsub.extend([
+                'b',
+                vsub[vsub.index('b') + 1]])
+    except AttributeError:
+        pass
+    except ValueError:
+        pass
+
+    try:
+        if template.code1:
+            nsub.extend(['c', template.code1])
+        else:
+            nsub.extend([
+                'c',
+                vsub[vsub.index('c') + 1]])
+    except AttributeError:
+        pass
+    except ValueError:
+        pass
+
+    try:
+        if template.code2:
+            nsub.extend(['d', template.code2])
+        else:
+            nsub.extend([
+                'd',
+                vsub[vsub.index('d') + 1]])
+    except AttributeError:
+        pass
+    except ValueError:
+        pass
+
+    try:
+        if template.code3:
+            nsub.extend(['e', template.code3])
+        else:
+            nsub.extend([
+                'e',
+                vsub[vsub.index('e') + 1]])
+    except AttributeError:
+        pass
+    except ValueError:
+        pass
+
+    try:
+        if template.code4:
+            nsub.extend(['f', template.code4])
+        else:
+            nsub.extend([
+                'f',
+                vsub[vsub.index('f') + 1]])
+    except AttributeError:
+        pass
+    except ValueError:
+        pass
+
+    try:
+        if template.form:
+            nsub.extend(['g', template.form])
+        else:
+            nsub.extend([
+                'g',
+                vsub[vsub.index('g') + 1]])
+    except AttributeError:
+        pass
+    except ValueError:
+        pass
+
+    try:
+        if template.orderNote:
+            nsub.extend(['h', template.orderNote])
+        else:
+            nsub.extend([
+                'h',
+                vsub[vsub.index('h') + 1]])
+    except AttributeError:
+        pass
+    except ValueError:
+        pass
+
+    try:
+        if template.orderType:
+            nsub.extend(['i', template.orderType])
+        else:
+            nsub.extend([
+                'i',
+                vsub[vsub.index('i') + 1]])
+    except AttributeError:
+        pass
+    except ValueError:
+        pass
+
+    try:
+        if template.status:
+            nsub.extend(['m', template.status])
+        else:
+            nsub.extend([
+                'm',
+                vsub[vsub.index('m') + 1]])
+    except AttributeError:
+        pass
+    except ValueError:
+        pass
+
+    try:
+        if template.vendor:
+            nsub.extend(['v', template.vendor])
+        else:
+            nsub.extend([
+                'v',
+                vsub[vsub.index('v') + 1]])
+    except AttributeError:
+        pass
+    except ValueError:
+        pass
+
+    try:
+        if template.lang:
+            nsub.extend(['w', template.lang])
+        else:
+            nsub.extend([
+                'w',
+                vsub[vsub.index('w') + 1]])
+    except AttributeError:
+        pass
+    except ValueError:
+        pass
+
+    try:
+        if template.country:
+            nsub.extend(['x', template.country])
+        else:
+            nsub.extend([
+                'x',
+                vsub[vsub.index('x') + 1]])
+    except AttributeError:
+        pass
+    except ValueError:
+        pass
+
+    field = Field(
+        tag='960',
+        indicators=[' ', ' '],
+        subfields=nsub)
+
+    return field
+
+
+def template_to_961(template, vendor_961):
+    """combines vendor and template 961 field data in
+    a new 961 field
+    attrs:
+        template (template datastore record),
+        vendor_961 (vendor 961 field in form of pymarc object)
+    returns:
+        None (no data coded in the 961)
+        field (pymarc Field object)"""
+
+    # order variable fields
+    try:
+        vsub = vendor_961.subfields
+        # subfields present on the vendor record
+        ven_subs = set([vsub[x] for x in range(0, len(vsub), 2)])
+    except AttributeError:
+        vsub = None
+        ven_subs = set()
+
+    # list of relevalnt to PVR subfields of 960
+    pvr_subs = set(
+        ['a', 'c', 'd', 'e', 'f', 'g', 'i', 'j', 'k', 'l', 'm', 'v'])
+
+    # find extra subfield to be carried over to the new field
+    nsub = []
+    diff_subs = ven_subs - pvr_subs
+
+    for s in diff_subs:
+        nsub.extend(
+            [vsub[vsub.index(s)], vsub[vsub.index(s) + 1]])
+
+    try:
+        if template.identity:
+            nsub.extend(['a', template.identity])
+        else:
+            nsub.extend([
+                'a',
+                vsub[vsub.index('a') + 1]])
+    except AttributeError:
+        pass
+    except ValueError:
+        pass
+
+    try:
+        if template.generalNote:
+            nsub.extend(['c', template.generalNote])
+        else:
+            nsub.extend([
+                'c',
+                vsub[vsub.index('c') + 1]])
+    except AttributeError:
+        pass
+    except ValueError:
+        pass
+
+    try:
+        if template.internalNote:
+            nsub.extend(['d', template.internalNote])
+        else:
+            nsub.extend([
+                'd',
+                vsub[vsub.index('d') + 1]])
+    except AttributeError:
+        pass
+    except ValueError:
+        pass
+
+    try:
+        if template.oldOrdNo:
+            nsub.extend(['e', template.oldOrdNo])
+        else:
+            nsub.extend([
+                'e',
+                vsub[vsub.index('e') + 1]])
+    except AttributeError:
+        pass
+    except ValueError:
+        pass
+
+    try:
+        if template.selector:
+            nsub.extend(['f', template.selector])
+        else:
+            nsub.extend([
+                'f',
+                vsub[vsub.index('f') + 1]])
+    except AttributeError:
+        pass
+    except ValueError:
+        pass
+
+    try:
+        if template.venAddr:
+            nsub.extend(['g', template.venAddr])
+        else:
+            nsub.extend([
+                'g',
+                vsub[vsub.index('g') + 1]])
+    except AttributeError:
+        pass
+    except ValueError:
+        pass
+
+    try:
+        if template.venNote:
+            nsub.extend(['v', template.venNote])
+        else:
+            nsub.extend([
+                'v',
+                vsub[vsub.index('v') + 1]])
+    except AttributeError:
+        pass
+    except ValueError:
+        pass
+
+    try:
+        if template.blanketPO:
+            nsub.extend(['m', template.blanketPO])
+        else:
+            nsub.extend([
+                'm',
+                vsub[vsub.index('m') + 1]])
+    except AttributeError:
+        pass
+    except ValueError:
+        pass
+
+    try:
+        if template.venTitleNo:
+            nsub.extend(['i', template.venTitleNo])
+        else:
+            nsub.extend([
+                'i',
+                vsub[vsub.index('i') + 1]])
+    except AttributeError:
+        pass
+    except ValueError:
+        pass
+
+    try:
+        if template.paidNote:
+            nsub.extend(['j', template.paidNote])
+        else:
+            nsub.extend([
+                'j',
+                vsub[vsub.index('j') + 1]])
+    except AttributeError:
+        pass
+    except ValueError:
+        pass
+
+    try:
+        if template.shipTo:
+            nsub.extend(['k', template.shipTo])
+        else:
+            nsub.extend([
+                'k',
+                vsub[vsub.index('k') + 1]])
+    except AttributeError:
+        pass
+    except ValueError:
+        pass
+
+    try:
+        if template.requestor:
+            nsub.extend(['l', template.requestor])
+        else:
+            nsub.extend([
+                'l',
+                vsub[vsub.index('l') + 1]])
+    except AttributeError:
+        pass
+    except ValueError:
+        pass
+
+    if nsub == []:
+        field = None
+    else:
+        field = Field(
+            tag='961',
+            indicators=[' ', ' '],
+            subfields=nsub)
+
+    return field
+
+
 class BibMeta:
     """
     creates a general record meta object
