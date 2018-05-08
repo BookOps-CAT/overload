@@ -135,7 +135,7 @@ def count_bibs(file):
         raise
 
 
-def template_to_960(template, vendor_960):
+def db_template_to_960(template, vendor_960):
     """"passed attr must be an instance of NYPLOrderTemplate"""
 
     # order fixed fields mapping
@@ -324,7 +324,7 @@ def template_to_960(template, vendor_960):
     return field
 
 
-def template_to_961(template, vendor_961):
+def db_template_to_961(template, vendor_961):
     """combines vendor and template 961 field data in
     a new 961 field
     attrs:
@@ -507,6 +507,14 @@ def template_to_961(template, vendor_961):
             indicators=[' ', ' '],
             subfields=nsub)
 
+    return field
+
+
+def db_template_to_949(mat_format):
+    field = Field(
+        tag='949',
+        indicators=[' ', ' '],
+        subfields=['a', '*b2={};'.format(mat_format)])
     return field
 
 

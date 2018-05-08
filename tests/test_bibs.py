@@ -306,7 +306,7 @@ class TestTemplate_to_960(unittest.TestCase):
         self.temp.country = None
 
     def test_vendor_960_is_None(self):
-        field = bibs.template_to_960(self.temp, None)
+        field = bibs.db_template_to_960(self.temp, None)
         self.assertIsInstance(
             field, Field)
         self.assertEqual(
@@ -335,7 +335,7 @@ class TestTemplate_to_960(unittest.TestCase):
                 'x', '13'
             ])
 
-        field = bibs.template_to_960(self.temp, vfield)
+        field = bibs.db_template_to_960(self.temp, vfield)
         self.assertEqual(
             str(field),
             '=960  \\\\$a1$b2$c3$d4$e5$f6$g7$h8$i9$m1$v11$w12$x13')
@@ -374,7 +374,7 @@ class TestTemplate_to_960(unittest.TestCase):
                 'x', '13'
             ])
 
-        field = bibs.template_to_960(self.temp, vfield)
+        field = bibs.db_template_to_960(self.temp, vfield)
         self.assertEqual(
             str(field),
             '=960  \\\\$aa$bb$cc$dd$ee$ff$gg$hh$ii$mm$vv$ww$xx')
@@ -395,7 +395,7 @@ class TestTemplate_to_960(unittest.TestCase):
                 's', '9.99',
                 'u', '2'
             ])
-        field = bibs.template_to_960(self.temp, vfield)
+        field = bibs.db_template_to_960(self.temp, vfield)
         self.assertEqual(
             str(field),
             '=960  \\\\$s9.99$u2$aa$dd$ee$ii$mm$vv')
@@ -424,12 +424,12 @@ class TestTemplate_to_961(unittest.TestCase):
         self.temp.requestor = None
 
     def test_vendor_subfields_None_return_None(self):
-        field = bibs.template_to_961(self.temp, None)
+        field = bibs.db_template_to_961(self.temp, None)
         self.assertIsNone(field)
 
     def test_retuns_instance_of_pymarc_Field_if_all_template_attr_not_None(self):
         self.temp.identity = 'a'
-        field = bibs.template_to_961(self.temp, None)
+        field = bibs.db_template_to_961(self.temp, None)
         self.assertIsInstance(field, Field)
 
     def test_if_template_overwrites_vendor_subfields(self):
@@ -463,7 +463,7 @@ class TestTemplate_to_961(unittest.TestCase):
                 'm', '12',
                 'v', '13',
             ])
-        field = bibs.template_to_961(self.temp, vfield)
+        field = bibs.db_template_to_961(self.temp, vfield)
         self.assertEqual(
             str(field),
             '=961  \\\\$aa$cc$dd$ee$ff$gg$vv$mm$ii$jj$kk$ll')
@@ -486,7 +486,7 @@ class TestTemplate_to_961(unittest.TestCase):
                 'm', '11',
                 'v', '12',
             ])
-        field = bibs.template_to_961(self.temp, vfield)
+        field = bibs.db_template_to_961(self.temp, vfield)
         self.assertEqual(
             str(field),
             '=961  \\\\$a1$c2$d3$e4$f5$g6$v12$m11$i7$j8$k9$l10')
@@ -501,7 +501,7 @@ class TestTemplate_to_961(unittest.TestCase):
 
         self.temp.identity = 'a'
         self.temp.blanketPO = 'm'
-        field = bibs.template_to_961(self.temp, vfield)
+        field = bibs.db_template_to_961(self.temp, vfield)
         self.assertEqual(
             str(field),
             '=961  \\\\$aa$v1$mm')
