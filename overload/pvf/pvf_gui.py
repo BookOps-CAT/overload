@@ -502,11 +502,17 @@ class OrderTemplate(tk.Frame):
             if t.bibFormat is not None:
                 self.bibMatForm.set(t.bibFormat)
 
+            if t.match1st is not None:
+                self.primary_match.set(t.match1st)
+            if t.match2nd is not None:
+                self.secondary_match.set(t.match2nd)
+            if t.match3rd is not None:
+                self.tertiary_match.set(t.match3rd)
+
     def save_template(self):
         record = dict()
-        print len(self.country.get())
 
-        # fixed fields
+        # comboboxes
         f = dict(
             tName=self.template_name.get().strip(),
             acqType=self.acqType.get(),
@@ -520,19 +526,27 @@ class OrderTemplate(tk.Frame):
             orderType=self.oType.get(),
             lang=self.lang.get(),
             country=self.country.get(),
-            bibFormat=self.bibMatForm.get()
+            bibFormat=self.bibMatForm.get(),
+            match1st=self.primary_match.get(),
+            match2nd=self.secondary_match.get(),
+            match3rd=self.tertiary_match.get()
         )
 
         for key, value in f.iteritems():
             if value == '':
                 value = None
             else:
-                if key == 'country':
+                if key in ('match1st', 'match2nd', 'match3rd'):
+                    if value == '':
+                        value = None
+                    record[key] = value
+                elif key == 'country':
                     value = value.split(' (')[0]
                 else:
                     value = value.split('(')[0].strip()
             record[key] = value
 
+        # entry boxes
         v = dict(
             vendor=self.vendor.get().strip(),
             identity=self.identity.get().strip(),
@@ -609,6 +623,7 @@ class OrderTemplate(tk.Frame):
             available_matches.remove(self.secondary_match.get())
         if self.tertiary_match.get() in available_matches:
             available_matches.remove(self.tertiary_match.get())
+        available_matches.append('')
         self.primaryCbx['values'] = available_matches
         self.secondaryCbx['values'] = available_matches
         self.tertiaryCbx['values'] = available_matches
@@ -731,6 +746,9 @@ class OrderTemplate(tk.Frame):
         self.requestor.set('')
         self.paidNote.set('')
         self.bibMatForm.set('')
+        self.primary_match.set('')
+        self.secondary_match.set('')
+        self.tertiary_match.set('')
 
 
 class ProcessVendorFiles(tk.Frame):
@@ -1124,9 +1142,6 @@ class ProcessVendorFiles(tk.Frame):
         self.templateCbx['state'] = 'readonly'
 
     def create_template(self):
-        # tkMessageBox.showwarning(
-        #     'Under construction', 'Feature not implemented yet.\n'
-        #     'Stay tuned...')
         OrderTemplate(self)
 
     def process(self):

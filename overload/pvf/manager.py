@@ -4,12 +4,11 @@ from datetime import datetime, date
 import shelve
 import logging
 from sqlalchemy.exc import IntegrityError
-# from requests.exceptions import ConnectionError, Timeout
 
 
 from bibs.bibs import VendorBibMeta, read_marc21, \
     create_target_id_field, write_marc21, check_sierra_id_presence, \
-    create_field_from_template
+    create_field_from_template, template_to_960, template_to_961
 from bibs.crosswalks import platform2meta
 from platform_comms import open_platform_session, platform_queries_manager
 from pvf.vendors import vendor_index, identify_vendor, get_query_matchpoint
@@ -114,18 +113,41 @@ def run_processing(
                             vendor))
             elif agent == 'sel':
                 # default matchpoints 020 than 001 for all
-                query_matchpoints = dict(
-                    primary=('tag', '020'),
-                    secondary=('tag', '001'))
-                print query_matchpoints
+                if system == 'nypl':
+                    query_matchpoints = dict()
+                    with session_scope() as db_session:
+                        trec = retrieve_record(
+                            db_session, NYPLOrderTemplate, tName=template)
+
+                        if trec.match1st == 'sierra_id':
+                            query_matchpoints['primary'] = (
+                                'id', trec.match1st)
+                        else:
+                            query_matchpoints['primary'] = (
+                                'tag', trec.match1st)
+                        if trec.match2nd is not None:
+                            if trec.match2nd == 'sierra_id':
+                                query_matchpoints['secondary'] = (
+                                    'id', trec.match2nd)
+                            else:
+                                query_matchpoints['secondary'] = (
+                                    'tag', trec.match2nd)
+                        if trec.match3rd is not None:
+                            if trec.match3rd == 'sierra_id':
+                                query_matchpoints['tertiary'] = (
+                                    'id', trec.match3rd)
+                            else:
+                                query_matchpoints['tertiary'] = (
+                                    'tag', trec.match3rd)
+                else:
+                    raise OverloadError(
+                        'selection workflow for BPL not implemented yet')
 
                 # vendor code
-                if template is not None:
-                    # apply to bibs
-                    vendor = get_vendor_from_template(template)
-                    if vendor is None:
-                        vendor == 'UNKNOWN'
-
+                vendor = get_vendor_from_template(template)
+                if vendor is None:
+                    # do not apply but keep for stats
+                    vendor == 'UNKNOWN'
             else:
                 # acq workflows
                 module_logger.warning(
@@ -137,167 +159,209 @@ def run_processing(
             if vendor == 'UNKNOWN':
                 module_logger.warning(
                     'Encounted unidentified vendor in record # : {} '
-                    'in file {}'.format(n, file))
+                    'in file {}.'.format(n, file))
 
-            # # determine vendor bib meta
-            # meta_in = VendorBibMeta(bib, vendor=vendor, dstLibrary=library)
-            # module_logger.debug('Vendor bib meta: {}'.format(str(meta_in)))
+            # determine vendor bib meta
+            meta_in = VendorBibMeta(bib, vendor=vendor, dstLibrary=library)
+            module_logger.debug('Vendor bib meta: {}'.format(str(meta_in)))
 
-            # # Platform API workflow
-            # if api_type == 'Platform API':
-            #     matchpoint = query_matchpoints['primary'][1]
-            #     module_logger.debug(
-            #         'Using primary marchpoint: {}'.format(
-            #             matchpoint))
-            #     try:
-            #         result = run_platform_queries(
-            #             api_type, session, meta_in, matchpoint)
+            # Platform API workflow
+            if api_type == 'Platform API':
+                matchpoint = query_matchpoints['primary'][1]
+                module_logger.debug(
+                    'Using primary marchpoint: {}.'.format(
+                        matchpoint))
+                try:
+                    result = run_platform_queries(
+                        api_type, session, meta_in, matchpoint)
 
-            #     except APITokenExpiredError:
-            #         module_logger.info(
-            #             'Requesting new Platform token. Opening new session.')
-            #         session = open_platform_session(api_name)
-            #         result = platform_queries_manager(
-            #             api_type, session, meta_in, matchpoint)
+                except APITokenExpiredError:
+                    module_logger.info(
+                        'Requesting new Platform token. Opening new session.')
+                    session = open_platform_session(api_name)
+                    result = platform_queries_manager(
+                        api_type, session, meta_in, matchpoint)
 
-            #     # run_patform_queries returns tuple (status, response in json)
-            #     meta_out = []
+                # run_patform_queries returns tuple (status, response in json)
+                meta_out = []
 
-            #     if result[0] == 'hit':
-            #         meta_out = platform2meta(result[1])
+                if result[0] == 'hit':
+                    meta_out = platform2meta(result[1])
 
-            #     elif result[0] == 'nohit':
-            #         # requery with alternative matchpoint
-            #         if 'secondary' in query_matchpoints:
-            #             matchpoint = query_matchpoints['secondary'][1]
-            #             module_logger.debug(
-            #                 'Using secondary marchpoint: {}'.format(
-            #                     matchpoint))
+                elif result[0] == 'nohit':
+                    # requery with alternative matchpoint
+                    if 'secondary' in query_matchpoints:
+                        matchpoint = query_matchpoints['secondary'][1]
+                        module_logger.debug(
+                            'Using secondary marchpoint: {}.'.format(
+                                matchpoint))
 
-            #             # run platform request for the secondary matchpoint
-            #             try:
-            #                 result = run_platform_queries(
-            #                     api_type, session, meta_in, matchpoint)
+                        # run platform request for the secondary matchpoint
+                        try:
+                            result = run_platform_queries(
+                                api_type, session, meta_in, matchpoint)
 
-            #             except APITokenExpiredError:
-            #                 module_logger.info(
-            #                     'Requesting new Platform token. '
-            #                     'Opening new session.')
+                        except APITokenExpiredError:
+                            module_logger.info(
+                                'Requesting new Platform token. '
+                                'Opening new session.')
 
-            #                 session = open_platform_session(api_name)
-            #                 result = run_platform_queries(
-            #                     api_type, session, meta_in, matchpoint)
-            #                 # other exceptions raised in run_platform_queries
+                            session = open_platform_session(api_name)
+                            result = run_platform_queries(
+                                api_type, session, meta_in, matchpoint)
+                            # other exceptions raised in run_platform_queries
 
-            #             if result[0] == 'hit':
-            #                 meta_out = platform2meta(result[1])
-            #             elif result[0] == 'error':
-            #                 raise OverloadError('Platform server error')
-            #         else:
-            #             module_logger.debug(
-            #                 'No secondary matchpoint specified. '
-            #                 'Ending queries.')
-            #     elif result[0] == 'error':
-            #         raise OverloadError('Platform server error')
+                        if result[0] == 'hit':
+                            meta_out = platform2meta(result[1])
+                        elif result[0] == 'nohit':
+                            # run query for the 3rd matchpoint
+                            if 'tertiary' in query_matchpoints:
+                                matchpoint = query_matchpoints['tertiary'][1]
+                                module_logger.debug(
+                                    'Using tertiary marchpoint: {}.'.format(
+                                        matchpoint))
 
-            # # queries performed via Z3950
-            # elif 'api_type' == 'Z3950s':
-            #     module_logger.error('Z3950 is not yet implemented.')
-            #     raise OverloadError('Z3950 is not yet implemented.')
-            # # queries performed via Sierra API
-            # elif 'api_type' == 'Sierra API':
-            #     module_logger.error('Sierra API is not implemented yet.')
-            #     raise OverloadError('Sierra API is not implemented yet.')
-            # else:
-            #     module_logger.error('Invalid api_type')
-            #     raise OverloadError('Invalid api_type encountered.')
+                                # run platform request for the tertiary 
+                                # matchpoint
+                                try:
+                                    result = run_platform_queries(
+                                        api_type, session, meta_in, matchpoint)
 
-            # if system == 'nypl':
-            #     analysis = PVR_NYPLReport(agent, meta_in, meta_out)
-            # elif system == 'bpl':
-            #     # analysis = PVR_BPLReport(agent, meta_in, meta_out)
-            #     pass
+                                except APITokenExpiredError:
+                                    module_logger.info(
+                                        'Requesting new Platform token. '
+                                        'Opening new session.')
 
-            # # save analysis to shelf
-            # module_logger.info('Analyzing query results and vendor bib')
-            # analysis = analysis.to_dict()
-            # stats[str(n)] = analysis
+                                    session = open_platform_session(api_name)
+                                    result = run_platform_queries(
+                                        api_type, session, meta_in, matchpoint)
+                                if result[0] == 'hit':
+                                    meta_out = platform2meta(result[1])
+                                elif result[0] == 'error':
+                                    raise OverloadError(
+                                        'Platform server error.')
+                        elif result[0] == 'error':
+                            raise OverloadError('Platform server error.')
+                    else:
+                        module_logger.debug(
+                            'No secondary matchpoint specified. '
+                            'Ending queries.')
+                elif result[0] == 'error':
+                    raise OverloadError('Platform server error.')
 
-            # # determine mrc files namehandles
-            # date_today = date.today().strftime('%y%m%d')
-            # fh_dups = output_directory + '/{}.DUP-0.mrc'.format(
-            #     date_today)
-            # fh_new = output_directory + '/{}.NEW-0.mrc'.format(
-            #     date_today)
+            # queries performed via Z3950
+            elif 'api_type' == 'Z3950s':
+                module_logger.error('Z3950 is not yet implemented.')
+                raise OverloadError('Z3950 is not yet implemented.')
+            # queries performed via Sierra API
+            elif 'api_type' == 'Sierra API':
+                module_logger.error('Sierra API is not implemented yet.')
+                raise OverloadError('Sierra API is not implemented yet.')
+            else:
+                module_logger.error('Invalid api_type')
+                raise OverloadError('Invalid api_type encountered.')
 
-            # # output processed records according to analysis
-            # # add Sierra bib id if matched
+            if system == 'nypl':
+                analysis = PVR_NYPLReport(agent, meta_in, meta_out)
+            elif system == 'bpl':
+                # analysis = PVR_BPLReport(agent, meta_in, meta_out)
+                pass
 
-            # # enforce utf-8 encoding in MARC leader
-            # bib.leader = bib.leader[:9] + 'a' + bib.leader[10:]
+            # save analysis to shelf
+            module_logger.info('Analyzing query results and vendor bib')
+            analysis = analysis.to_dict()
+            stats[str(n)] = analysis
 
-            # sierra_id_present = check_sierra_id_presence(
-            #     system, bib)
-            # module_logger.debug(
-            #     'Checking if vendor bib has Sierra ID provided: '
-            #     '{}'.format(sierra_id_present))
+            # determine mrc files namehandles
+            date_today = date.today().strftime('%y%m%d')
+            fh_dups = output_directory + '/{}.DUP-0.mrc'.format(
+                date_today)
+            fh_new = output_directory + '/{}.NEW-0.mrc'.format(
+                date_today)
 
-            # if not sierra_id_present and \
-            #         analysis['target_sierraId'] is not None:
+            # output processed records according to analysis
+            # add Sierra bib id if matched
 
-            #     try:
-            #         module_logger.info(
-            #             'Adding MARC field with target Sierra id '
-            #             'to vendor record: {}.'.format(
-            #                 analysis['target_sierraId']))
-            #         bib.add_field(
-            #             create_target_id_field(
-            #                 system, analysis['target_sierraId']))
+            # enforce utf-8 encoding in MARC leader
+            bib.leader = bib.leader[:9] + 'a' + bib.leader[10:]
 
-            #     except ValueError as e:
-            #         module_logger.error(e)
-            #         raise OverloadError(e)
+            sierra_id_present = check_sierra_id_presence(
+                system, bib)
+            module_logger.debug(
+                'Checking if vendor bib has Sierra ID provided: '
+                '{}'.format(sierra_id_present))
 
-            # # add fields form bib & order templates
-            # module_logger.info(
-            #     'Adding template field(s) to the vendor record.')
-            # if agent == 'cat':
-            #     templates = vx[vendor].get('bib_template')
-            #     module_logger.debug(
-            #         'Selected CAT templates for {}: {}'.format(
-            #             vendor, templates))
-            #     for template in templates:
-            #         # skip if present or always add
+            if not sierra_id_present and \
+                    analysis['target_sierraId'] is not None:
 
-            #         if template['option'] == 'skip':
-            #             if template['tag'] not in bib:
-            #                 module_logger.debug(
-            #                     'Field {} not present, adding '
-            #                     'from template'.format(
-            #                         template['tag']))
-            #                 new_field = create_field_from_template(template)
-            #                 bib.add_field(new_field)
-            #             else:
-            #                 module_logger.debug(
-            #                     'Field {} found. Skipping.'.format(
-            #                         template['tag']))
-            #         elif template['option'] == 'add':
-            #             module_logger.debug(
-            #                 'Field {} being added without checking '
-            #                 'if already present'.format(
-            #                     template['tag']))
-            #             new_field = create_field_from_template(template)
-            #             bib.add_field(new_field)
+                try:
+                    module_logger.info(
+                        'Adding MARC field with target Sierra id '
+                        'to vendor record: {}.'.format(
+                            analysis['target_sierraId']))
+                    bib.add_field(
+                        create_target_id_field(
+                            system, analysis['target_sierraId']))
 
-            # # append to appropirate output file
-            # if analysis['action'] == 'attach':
-            #     module_logger.info(
-            #         'Appending vendor record to the dup file.')
-            #     write_marc21(fh_dups, bib)
-            # else:
-            #     module_logger.info(
-            #         'Appending vendor record to the new file.')
-            #     write_marc21(fh_new, bib)
+                except ValueError as e:
+                    module_logger.error(e)
+                    raise OverloadError(e)
+
+            # add fields form bib & order templates
+            module_logger.info(
+                'Adding template field(s) to the vendor record.')
+            if agent == 'cat':
+                templates = vx[vendor].get('bib_template')
+                module_logger.debug(
+                    'Selected CAT templates for {}: {}'.format(
+                        vendor, templates))
+                for template in templates:
+                    # skip if present or always add
+
+                    if template['option'] == 'skip':
+                        if template['tag'] not in bib:
+                            module_logger.debug(
+                                'Field {} not present, adding '
+                                'from template'.format(
+                                    template['tag']))
+                            new_field = create_field_from_template(template)
+                            bib.add_field(new_field)
+                        else:
+                            module_logger.debug(
+                                'Field {} found. Skipping.'.format(
+                                    template['tag']))
+                    elif template['option'] == 'add':
+                        module_logger.debug(
+                            'Field {} being added without checking '
+                            'if already present'.format(
+                                template['tag']))
+                        new_field = create_field_from_template(template)
+                        bib.add_field(new_field)
+            elif agent in ('sel', 'acq'):
+                with session_scope() as db_session:
+                    trec = retrieve_record(
+                        db_session, NYPLOrderTemplate, tName=template)
+
+                    new_field = template_to_960(trec, bib['960'])
+                    if '960' in bib:
+                        bib.remove_fields('960')
+                    bib.add_field(new_field)
+
+                    new_field = template_to_961(trec, bib['961'])
+                    if '961' in bib:
+                        bib.remove_fields('961')
+                    if new_field:
+                        bib.add_field(new_field)
+
+            # append to appropirate output file
+            if analysis['action'] == 'attach':
+                module_logger.info(
+                    'Appending vendor record to the dup file.')
+                write_marc21(fh_dups, bib)
+            else:
+                module_logger.info(
+                    'Appending vendor record to the new file.')
+                write_marc21(fh_new, bib)
 
             # update progbar
             progbar['value'] = n
@@ -393,13 +457,24 @@ def save_template(record):
     try:
         with session_scope() as session:
             insert_or_ignore(session, NYPLOrderTemplate, **record)
-    except IntegrityError:
-        raise OverloadError('Duplicate or missing template name')
+    except IntegrityError as e:
+        module_logger.error(
+            'IntegrityError on template save: {}'.format(e))
+        raise OverloadError(
+            'Duplicate/missing template name\n'
+            'or missing primary matchpoint')
 
 
 def update_template(otid, record):
-    with session_scope() as session:
-        update_nypl_template(session, otid, **record)
+    try:
+        with session_scope() as session:
+            update_nypl_template(session, otid, **record)
+    except IntegrityError as e:
+        module_logger.error(
+            'IntegrityError on template update: {}'.format(e))
+        raise OverloadError(
+            'Duplicate/missing template name\n'
+            'or missing primary matchpoint')
 
 
 def delete_template(otid):
