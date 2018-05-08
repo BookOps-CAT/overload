@@ -40,7 +40,7 @@ def platform_status_interpreter(response=None):
                     response.text))
             status = None
     else:
-        status = None
+        status = 'nohit'
     return status
 
 
