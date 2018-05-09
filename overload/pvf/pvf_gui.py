@@ -333,7 +333,7 @@ class OrderTemplate(tk.Frame):
 
         # sierra bibliographic format frame
         self.bibFrm = ttk.LabelFrame(
-            self.top, text='Sierra bib format')
+            self.top, text='sierra bib format')
         self.bibFrm.grid(
             row=20, column=4, sticky='snew', padx=10, pady=10)
         self.bibFrm.rowconfigure(2, minsize=5)
@@ -349,7 +349,7 @@ class OrderTemplate(tk.Frame):
 
         # matchpoints frame
         self.matchFrm = ttk.LabelFrame(
-            self.top, text='Sierra Matchpoints')
+            self.top, text='sierra matchpoints')
         self.matchFrm.grid(
             row=20, column=6, columnspan=9, sticky='snew', padx=10, pady=10)
 
@@ -1348,7 +1348,8 @@ class ProcessVendorFiles(tk.Frame):
         archive_files = []
         for file in os.listdir(self.last_directory):
             if file.endswith('.mrc') and (
-                    '.DUP-' in file or '.NEW-' in file):
+                    '.DUP-' in file or '.NEW-' in file \
+                    or'.FILE-' in file):
                 archive_files.append(file)
         if len(archive_files) > 0:
             self.topA = tk.Toplevel(self, background='white')

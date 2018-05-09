@@ -8,7 +8,8 @@ from sqlalchemy.exc import IntegrityError
 
 from bibs.bibs import VendorBibMeta, read_marc21, \
     create_target_id_field, write_marc21, check_sierra_id_presence, \
-    create_field_from_template, template_to_960, template_to_961
+    check_sierra_format_tag_presence, create_field_from_template, \
+    db_template_to_960, db_template_to_961, db_template_to_949
 from bibs.crosswalks import platform2meta
 from platform_comms import open_platform_session, platform_queries_manager
 from pvf.vendors import vendor_index, identify_vendor, get_query_matchpoint
@@ -154,7 +155,7 @@ def run_processing(
                     'ACQ workflows for vendor identification '
                     'has not been implemented yet.')
                 raise OverloadError(
-                    'Selection & Acquisition workflows not implemented yet.')
+                    'Acquisition workflows not yet implemented.')
 
             if vendor == 'UNKNOWN':
                 module_logger.warning(
@@ -274,10 +275,19 @@ def run_processing(
 
             # determine mrc files namehandles
             date_today = date.today().strftime('%y%m%d')
-            fh_dups = output_directory + '/{}.DUP-0.mrc'.format(
-                date_today)
-            fh_new = output_directory + '/{}.NEW-0.mrc'.format(
-                date_today)
+            if agent == 'cat':
+                fh_dups = output_directory + '/{}.DUP-0.mrc'.format(
+                    date_today)
+                fh_new = output_directory + '/{}.NEW-0.mrc'.format(
+                    date_today)
+            elif agent == 'sel':
+                fh = output_directory + '/{}-{}.FILE-0.mrc'.format(
+                    date_today, vendor)
+            elif agent == 'acq':
+                fh_dups = output_directory + '/{}-{}.DUP-0.mrc'.format(
+                    date_today, vendor)
+                fh_new = output_directory + '/{}-{}.NEW-0.mrc'.format(
+                    date_today, vendor)
 
             # output processed records according to analysis
             # add Sierra bib id if matched
@@ -342,26 +352,36 @@ def run_processing(
                     trec = retrieve_record(
                         db_session, NYPLOrderTemplate, tName=template)
 
-                    new_field = template_to_960(trec, bib['960'])
+                    new_field = db_template_to_960(trec, bib['960'])
                     if '960' in bib:
                         bib.remove_fields('960')
                     bib.add_field(new_field)
 
-                    new_field = template_to_961(trec, bib['961'])
+                    new_field = db_template_to_961(trec, bib['961'])
                     if '961' in bib:
                         bib.remove_fields('961')
                     if new_field:
                         bib.add_field(new_field)
 
+                    if trec.bibFormat and \
+                            not check_sierra_format_tag_presence(bib):
+                        new_field = db_template_to_949(trec.bibFormat)
+                        bib.add_field(new_field)
+
             # append to appropirate output file
-            if analysis['action'] == 'attach':
-                module_logger.info(
-                    'Appending vendor record to the dup file.')
-                write_marc21(fh_dups, bib)
+            if agent in ('cat', 'acq'):
+                if analysis['action'] == 'attach':
+                    module_logger.info(
+                        'Appending vendor record to the dup file.')
+                    write_marc21(fh_dups, bib)
+                else:
+                    module_logger.info(
+                        'Appending vendor record to the new file.')
+                    write_marc21(fh_new, bib)
             else:
                 module_logger.info(
-                    'Appending vendor record to the new file.')
-                write_marc21(fh_new, bib)
+                    'Appending vendor record to a file.')
+                write_marc21(fh, bib)
 
             # update progbar
             progbar['value'] = n
