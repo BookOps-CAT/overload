@@ -7,3 +7,7 @@ To create an order and bibliographic record template please provide elements tha
 Please note, any populated element will be added to the record if it is not present or will overwrite existing one (!). Empty element will be omitted in mapping. If records being processed include already a particular data, to preserve it please make sure the specified field box is empty.
 
 The 'bib material form' box allows to define Sierra's internal bib material format. Please note, this will only work for new records. If a record is determined to be a duplicate, the used load table will not allow bib material format to be set - orders will be attached to existing record without altering the original bib format.
+
+Sierra matchpoints specify what elements of a record should be used to query Sierra for matches. Unless specifically instructed use following setup:
+-print materials: primary 020, secondary 001
+-visual and audiovisual materials: primary 001, secondary 020, tertiary 024
