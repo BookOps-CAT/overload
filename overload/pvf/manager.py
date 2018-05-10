@@ -348,20 +348,31 @@ def run_processing(
                         new_field = create_field_from_template(template)
                         bib.add_field(new_field)
             elif agent in ('sel', 'acq'):
+                # batch template details should be retrieved instead for the
+                # whole batch = no need to pull it for each bib
                 with session_scope() as db_session:
                     trec = retrieve_record(
                         db_session, NYPLOrderTemplate, tName=template)
 
-                    new_field = db_template_to_960(trec, bib['960'])
+                    new_fields = []
+                    for t960 in bib.get_fields('960'):
+                        new_field = db_template_to_960(trec, t960)
+                        if new_field:
+                            new_fields.append(new_field)
                     if '960' in bib:
                         bib.remove_fields('960')
-                    bib.add_field(new_field)
+                    for field in new_fields:
+                        bib.add_field(field)
 
-                    new_field = db_template_to_961(trec, bib['961'])
+                    new_fields = []
+                    for t961 in bib.get_fields('961'):
+                        new_field = db_template_to_961(trec, t961)
+                        if new_field:
+                            new_fields.append(new_field)
                     if '961' in bib:
                         bib.remove_fields('961')
-                    if new_field:
-                        bib.add_field(new_field)
+                    for field in new_fields:
+                        bib.add_field(field)
 
                     if trec.bibFormat and \
                             not check_sierra_format_tag_presence(bib):
