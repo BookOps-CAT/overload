@@ -29,6 +29,35 @@ import bibs.sierra_dicts as sd
 module_logger = logging.getLogger('overload_console.pvr_gui')
 
 
+class TransferFiles(tk.Frame):
+    """GUI for connecting to vendor's FTPs"""
+    def __init__(self, parent):
+        self.parent = parent
+        tk.Frame.__init__(self, self.parent, background='white')
+        self.top = tk.Toplevel(self, background='white')
+        self.cur_manager = BusyManager(self)
+        self.top.iconbitmap('./icons/ftp.ico')
+        self.top.title('Transfer files')
+
+        # variable
+        self.host = tk.StringVar()
+        self.files = None
+
+        # layout
+        self.top.columnconfigure(0, minsize=5)
+        self.top.columnconfigure(9, minsize=5)
+        self.top.rowconfigure(0, minsize=5)
+
+        # widgets
+        ttk.Label(self.top, text='host:').grid(
+            row=1, column=1, sticky='sw', pady=10)
+        self.hostEnt = ttk.Entry(
+            self.fixedFrm, textvariable=self.host)
+        self.hostEnt.grid(
+            row=1, column=2, sticky='sew', pady=10)
+
+
+
 class OrderTemplate(tk.Frame):
     """GUI for selection order templates"""
     def __init__(self, parent):
@@ -194,9 +223,9 @@ class OrderTemplate(tk.Frame):
             self.fixedFrm, text='Vendor',
             style='Small.TLabel').grid(
             row=6, column=3, columnspan=2, sticky='sw')
-        self.vendorCbx = ttk.Entry(
+        self.vendorEnt = ttk.Entry(
             self.fixedFrm, textvariable=self.vendor)
-        self.vendorCbx.grid(
+        self.vendorEnt.grid(
             row=7, column=3, columnspan=2, sticky='sew')
 
         ttk.Label(
@@ -1132,9 +1161,7 @@ class ProcessVendorFiles(tk.Frame):
             self.reset()
 
     def ftp(self):
-        tkMessageBox.showwarning(
-            'Under construction', 'Feature not implemented yet.\n'
-            'Stay tuned...')
+        TransferFiles(self)
 
     def list_templates(self):
         names = get_template_names()
