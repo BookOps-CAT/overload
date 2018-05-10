@@ -129,6 +129,21 @@ class NYPLOrderTemplate(Base):
             )
 
 
+class FTPs(Base):
+    """Stores vendor FTP details"""
+    __tablename__ = 'ftps'
+    fid = Column(Integer, primary_key=True)
+    host = Column(String, nullable=False, unique=True)
+    user = Column(String)
+    password = Column(String)
+    system = Column(String, nullable=False)
+
+    def __repr__(self):
+        return "<FTPs(fid='%s', host='%s', user='%s', password='%s', " \
+            "system='%s')>" % (
+                self.fid, self.host, self.user, self.password, self.system)
+
+
 class DataAccessLayer:
 
     def __init__(self):
