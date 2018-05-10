@@ -427,10 +427,20 @@ class TestTemplate_to_961(unittest.TestCase):
         field = bibs.db_template_to_961(self.temp, None)
         self.assertIsNone(field)
 
-    def test_retuns_instance_of_pymarc_Field_if_all_template_attr_not_None(self):
-        self.temp.identity = 'a'
+    def test_retuns_None_if_all_template_attr_not_None(self):
         field = bibs.db_template_to_961(self.temp, None)
+        self.assertIsNone(field)
+
+    def test_returns_Field_obj_when_template_None_but_field_exists(self):
+        vfield = Field(
+            tag='961',
+            indicators=[' ', ' '],
+            subfields=['a', '1', 'b', '2'])
+        field = bibs.db_template_to_961(self.temp, vfield)
         self.assertIsInstance(field, Field)
+        self.assertEqual(
+            str(field),
+            '=961  \\\\$b2$a1')
 
     def test_if_template_overwrites_vendor_subfields(self):
         self.temp.identity = 'a'
@@ -505,6 +515,16 @@ class TestTemplate_to_961(unittest.TestCase):
         self.assertEqual(
             str(field),
             '=961  \\\\$aa$v1$mm')
+
+    def test_1(self):
+        vfield = Field(
+            tag='961',
+            indicators=[' ', ' '],
+            subfields=['h', 'g'])
+        field = bibs.db_template_to_961(self.temp, vfield)
+        self.assertEqual(
+            str(field),
+            '=961  \\\\$hg')
 
 
 if __name__ == '__main__':

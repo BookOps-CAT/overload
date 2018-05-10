@@ -145,7 +145,7 @@ def db_template_to_960(template, vendor_960):
         ven_subs = set([vsub[x] for x in range(0, len(vsub), 2)])
 
     except AttributeError:
-        vsub = None
+        vsub = []
         ven_subs = set()
 
     # list of relevalnt to PVR subfields of 960
@@ -153,22 +153,24 @@ def db_template_to_960(template, vendor_960):
         ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'm',
         'v', 'w', 'x'])
 
-    # find extra subfield to be carried over to the new field
+    # find extra subfields to be carried over to the new field
     nsub = []
     diff_subs = ven_subs - pvr_subs
     for s in diff_subs:
         nsub.extend(
             [vsub[vsub.index(s)], vsub[vsub.index(s) + 1]])
 
+    # create list of subfield codes without subfield data as index
+    vinx = [vsub[x] if x % 2 == 0 else None for x in range(0, len(vsub))]
+
+    # use template values if provided else use original if exists
     try:
         if template.acqType:
             nsub.extend(['a', template.acqType])
         else:
             nsub.extend([
                 'a',
-                vsub[vsub.index('a') + 1]])
-    except AttributeError:
-        pass
+                vsub[vinx.index('a') + 1]])
     except ValueError:
         pass
 
@@ -178,9 +180,7 @@ def db_template_to_960(template, vendor_960):
         else:
             nsub.extend([
                 'b',
-                vsub[vsub.index('b') + 1]])
-    except AttributeError:
-        pass
+                vsub[vinx.index('b') + 1]])
     except ValueError:
         pass
 
@@ -190,9 +190,7 @@ def db_template_to_960(template, vendor_960):
         else:
             nsub.extend([
                 'c',
-                vsub[vsub.index('c') + 1]])
-    except AttributeError:
-        pass
+                vsub[vinx.index('c') + 1]])
     except ValueError:
         pass
 
@@ -202,9 +200,7 @@ def db_template_to_960(template, vendor_960):
         else:
             nsub.extend([
                 'd',
-                vsub[vsub.index('d') + 1]])
-    except AttributeError:
-        pass
+                vsub[vinx.index('d') + 1]])
     except ValueError:
         pass
 
@@ -214,9 +210,7 @@ def db_template_to_960(template, vendor_960):
         else:
             nsub.extend([
                 'e',
-                vsub[vsub.index('e') + 1]])
-    except AttributeError:
-        pass
+                vsub[vinx.index('e') + 1]])
     except ValueError:
         pass
 
@@ -226,9 +220,7 @@ def db_template_to_960(template, vendor_960):
         else:
             nsub.extend([
                 'f',
-                vsub[vsub.index('f') + 1]])
-    except AttributeError:
-        pass
+                vsub[vinx.index('f') + 1]])
     except ValueError:
         pass
 
@@ -238,9 +230,7 @@ def db_template_to_960(template, vendor_960):
         else:
             nsub.extend([
                 'g',
-                vsub[vsub.index('g') + 1]])
-    except AttributeError:
-        pass
+                vsub[vinx.index('g') + 1]])
     except ValueError:
         pass
 
@@ -250,9 +240,7 @@ def db_template_to_960(template, vendor_960):
         else:
             nsub.extend([
                 'h',
-                vsub[vsub.index('h') + 1]])
-    except AttributeError:
-        pass
+                vsub[vinx.index('h') + 1]])
     except ValueError:
         pass
 
@@ -262,9 +250,7 @@ def db_template_to_960(template, vendor_960):
         else:
             nsub.extend([
                 'i',
-                vsub[vsub.index('i') + 1]])
-    except AttributeError:
-        pass
+                vsub[vinx.index('i') + 1]])
     except ValueError:
         pass
 
@@ -274,9 +260,7 @@ def db_template_to_960(template, vendor_960):
         else:
             nsub.extend([
                 'm',
-                vsub[vsub.index('m') + 1]])
-    except AttributeError:
-        pass
+                vsub[vinx.index('m') + 1]])
     except ValueError:
         pass
 
@@ -286,9 +270,7 @@ def db_template_to_960(template, vendor_960):
         else:
             nsub.extend([
                 'v',
-                vsub[vsub.index('v') + 1]])
-    except AttributeError:
-        pass
+                vsub[vinx.index('v') + 1]])
     except ValueError:
         pass
 
@@ -298,9 +280,7 @@ def db_template_to_960(template, vendor_960):
         else:
             nsub.extend([
                 'w',
-                vsub[vsub.index('w') + 1]])
-    except AttributeError:
-        pass
+                vsub[vinx.index('w') + 1]])
     except ValueError:
         pass
 
@@ -310,9 +290,7 @@ def db_template_to_960(template, vendor_960):
         else:
             nsub.extend([
                 'x',
-                vsub[vsub.index('x') + 1]])
-    except AttributeError:
-        pass
+                vsub[vinx.index('x') + 1]])
     except ValueError:
         pass
 
@@ -340,7 +318,7 @@ def db_template_to_961(template, vendor_961):
         # subfields present on the vendor record
         ven_subs = set([vsub[x] for x in range(0, len(vsub), 2)])
     except AttributeError:
-        vsub = None
+        vsub = []
         ven_subs = set()
 
     # list of relevalnt to PVR subfields of 960
@@ -355,15 +333,17 @@ def db_template_to_961(template, vendor_961):
         nsub.extend(
             [vsub[vsub.index(s)], vsub[vsub.index(s) + 1]])
 
+    # create list of subfield codes without subfield data as index
+    vinx = [vsub[x] if x % 2 == 0 else None for x in range(0, len(vsub))]
+
+    # apply from template if provided, else keep the vendor data
     try:
         if template.identity:
             nsub.extend(['a', template.identity])
         else:
             nsub.extend([
                 'a',
-                vsub[vsub.index('a') + 1]])
-    except AttributeError:
-        pass
+                vsub[vinx.index('a') + 1]])
     except ValueError:
         pass
 
@@ -373,9 +353,7 @@ def db_template_to_961(template, vendor_961):
         else:
             nsub.extend([
                 'c',
-                vsub[vsub.index('c') + 1]])
-    except AttributeError:
-        pass
+                vsub[vinx.index('c') + 1]])
     except ValueError:
         pass
 
@@ -385,9 +363,7 @@ def db_template_to_961(template, vendor_961):
         else:
             nsub.extend([
                 'd',
-                vsub[vsub.index('d') + 1]])
-    except AttributeError:
-        pass
+                vsub[vinx.index('d') + 1]])
     except ValueError:
         pass
 
@@ -397,9 +373,7 @@ def db_template_to_961(template, vendor_961):
         else:
             nsub.extend([
                 'e',
-                vsub[vsub.index('e') + 1]])
-    except AttributeError:
-        pass
+                vsub[vinx.index('e') + 1]])
     except ValueError:
         pass
 
@@ -409,9 +383,7 @@ def db_template_to_961(template, vendor_961):
         else:
             nsub.extend([
                 'f',
-                vsub[vsub.index('f') + 1]])
-    except AttributeError:
-        pass
+                vsub[vinx.index('f') + 1]])
     except ValueError:
         pass
 
@@ -421,9 +393,7 @@ def db_template_to_961(template, vendor_961):
         else:
             nsub.extend([
                 'g',
-                vsub[vsub.index('g') + 1]])
-    except AttributeError:
-        pass
+                vsub[vinx.index('g') + 1]])
     except ValueError:
         pass
 
@@ -433,9 +403,7 @@ def db_template_to_961(template, vendor_961):
         else:
             nsub.extend([
                 'v',
-                vsub[vsub.index('v') + 1]])
-    except AttributeError:
-        pass
+                vsub[vinx.index('v') + 1]])
     except ValueError:
         pass
 
@@ -445,9 +413,7 @@ def db_template_to_961(template, vendor_961):
         else:
             nsub.extend([
                 'm',
-                vsub[vsub.index('m') + 1]])
-    except AttributeError:
-        pass
+                vsub[vinx.index('m') + 1]])
     except ValueError:
         pass
 
@@ -457,9 +423,7 @@ def db_template_to_961(template, vendor_961):
         else:
             nsub.extend([
                 'i',
-                vsub[vsub.index('i') + 1]])
-    except AttributeError:
-        pass
+                vsub[vinx.index('i') + 1]])
     except ValueError:
         pass
 
@@ -469,9 +433,7 @@ def db_template_to_961(template, vendor_961):
         else:
             nsub.extend([
                 'j',
-                vsub[vsub.index('j') + 1]])
-    except AttributeError:
-        pass
+                vsub[vinx.index('j') + 1]])
     except ValueError:
         pass
 
@@ -481,9 +443,7 @@ def db_template_to_961(template, vendor_961):
         else:
             nsub.extend([
                 'k',
-                vsub[vsub.index('k') + 1]])
-    except AttributeError:
-        pass
+                vsub[vinx.index('k') + 1]])
     except ValueError:
         pass
 
@@ -493,9 +453,7 @@ def db_template_to_961(template, vendor_961):
         else:
             nsub.extend([
                 'l',
-                vsub[vsub.index('l') + 1]])
-    except AttributeError:
-        pass
+                vsub[vinx.index('l') + 1]])
     except ValueError:
         pass
 
