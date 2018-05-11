@@ -42,20 +42,166 @@ class TransferFiles(tk.Frame):
         # variable
         self.host = tk.StringVar()
         self.files = None
+        self.rename_option = tk.IntVar()
+        self.transfer_type = tk.StringVar()
 
         # layout
         self.top.columnconfigure(0, minsize=5)
-        self.top.columnconfigure(9, minsize=5)
+        self.top.columnconfigure(1, minsize=30)
+        # self.top.columnconfigure(7, minsize=40)
+        self.top.columnconfigure(12, minsize=5)
         self.top.rowconfigure(0, minsize=5)
+        self.top.rowconfigure(2, minsize=20)
+        self.top.rowconfigure(23, minsize=5)
+        self.top.rowconfigure(26, minsize=5)
 
         # widgets
         ttk.Label(self.top, text='host:').grid(
-            row=1, column=1, sticky='sw', pady=10)
+            row=1, column=1, sticky='se', padx=10, pady=10)
         self.hostEnt = ttk.Entry(
-            self.fixedFrm, textvariable=self.host)
+            self.top, textvariable=self.host)
         self.hostEnt.grid(
-            row=1, column=2, sticky='sew', pady=10)
+            row=1, column=2, columnspan=3, sticky='sew', pady=10)
 
+        self.connBtn = ttk.Button(
+            self.top,
+            text='connect',
+            command=self.connect)
+        self.connBtn.grid(
+            row=1, column=5, sticky='nw', padx=10, pady=5)
+
+        self.disconnBtn = ttk.Button(
+            self.top,
+            text='disconnect',
+            command=self.disconnect)
+        self.disconnBtn.grid(
+            row=1, column=7, sticky='nw', padx=10, pady=5)
+
+        self.newBtn = ttk.Button(
+            self.top,
+            text='new',
+            command=self.new_connection)
+        self.newBtn.grid(
+            row=1, column=8, sticky='new', padx=10, pady=5)
+
+        self.deleteBtn = ttk.Button(
+            self.top,
+            text='delete',
+            command=self.delete_connection)
+        self.deleteBtn.grid(
+            row=1, column=9, sticky='new', padx=10, pady=5)
+
+        self.leftBtn = ttk.Button(
+            self.top,
+            text='<=',
+            width=2,
+            command=self.move_left)
+        self.leftBtn.grid(
+            row=13, column=6, sticky='nw', pady=5)
+        self.rightBtn = ttk.Button(
+            self.top,
+            text='=>',
+            width=2,
+            command=self.move_right)
+        self.rightBtn.grid(
+            row=14, column=6, sticky='nw', pady=5)
+
+        # local frame
+        self.locFrm = ttk.LabelFrame(
+            self.top, text='local')
+        self.locFrm.grid(
+            row=2, column=1, rowspan=20, columnspan=5, sticky='snew', padx=10)
+
+        self.locTrv = ttk.Treeview(
+            self.locFrm,
+            columns=('name', 'size', 'date'),
+            displaycolumns=('name', 'size', 'date'),
+            selectmode='extended')
+        self.locTrv.column('#0', width=15)
+        self.locTrv.column('name', width=250)
+        self.locTrv.heading('name', text='name')
+        self.locTrv.column('size', width=70)
+        self.locTrv.heading('size', text='size')
+        self.locTrv.column('date', width=70)
+        self.locTrv.heading('date', text='date')
+        self.locTrv.grid(
+            row=0, column=0, columnspan=5, sticky='snew')
+
+        # remote frame
+        self.remFrm = ttk.LabelFrame(
+            self.top, text='remote')
+        self.remFrm.grid(
+            row=2, column=7, rowspan=20, columnspan=5, sticky='snew', padx=10)
+
+        self.remTrv = ttk.Treeview(
+            self.remFrm,
+            columns=('name', 'size', 'date'),
+            displaycolumns=('name', 'size', 'date'),
+            selectmode='extended')
+        self.remTrv.column('#0', width=15)
+        self.remTrv.column('name', width=250)
+        self.remTrv.heading('name', text='name')
+        self.remTrv.column('size', width=70)
+        self.remTrv.heading('size', text='size')
+        self.remTrv.column('date', width=70)
+        self.remTrv.heading('date', text='date')
+        self.remTrv.grid(
+            row=0, column=0, columnspan=6, sticky='snew')
+
+        ttk.Label(self.top, text='transfer type').grid(
+            row=24, column=1, sticky='sw', padx=10, pady=10)
+        self.transferCbx = ttk.Combobox(
+            self.top,
+            width=6,
+            textvariable=self.transfer_type)
+        self.transferCbx.grid(
+            row=24, column=2, sticky='sw', padx=10, pady=10)
+        self.transferCbx['values'] = ['binary', 'ASCII']
+        self.transferCbx['state'] = 'readonly'
+        self.transfer_type.set('binary')
+
+        self.renameCtn = ttk.Checkbutton(
+            self.top,
+            cursor='hand2',
+            text='rename files upon transfer',
+            variable=self.rename_option)
+        self.renameCtn.grid(
+            row=24, column=3, columnspan=3, sticky='sew', padx=10, pady=10)
+
+        self.helpBtn = ttk.Button(
+            self.top,
+            text='help',
+            command=self.help)
+        self.helpBtn.grid(
+            row=25, column=8, sticky='sew', padx=10, pady=10)
+
+        self.closeBtn = ttk.Button(
+            self.top,
+            text='close',
+            command=self.top.destroy)
+        self.closeBtn.grid(
+            row=25, column=9, sticky='sew', padx=10, pady=10)
+
+    def connect():
+        pass
+
+    def disconnect():
+        pass
+
+    def new_connection():
+        pass
+
+    def delete_connection():
+        pass
+
+    def move_left():
+        pass
+
+    def move_right():
+        pass
+
+    def help():
+        pass
 
 
 class OrderTemplate(tk.Frame):
