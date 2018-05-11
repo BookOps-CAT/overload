@@ -19,7 +19,7 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'loggly.handlers.HTTPSHandler',
             'formatter': 'standard',
-            'url': 'https://logs-01.loggly.com/inputs/8ee36782-55bc-4906-aeae-1dc4c3aae157/tag/python',
+            'url': 'https://logs-01.loggly.com/inputs/[token]/tag/python',
         },
     },
     'loggers': {
