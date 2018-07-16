@@ -545,7 +545,7 @@ N_MATFORM = {
     'b': 'blu-ray'
 }
 
-NYPL_BRACHES = {
+NYPL_BRANCHES = {
     "ag": "Aguilar",
     "al": "Allerton",
     "ba": "Baychester",
