@@ -10,6 +10,7 @@ USER_DATA = os.path.join(APP_DIR, 'user_data')
 DATASTORE = os.path.join(APP_DIR, 'datastore.db')  # move some user_data here
 BATCH_STATS = os.path.join(TEMP_DIR, 'batch_stats')
 BATCH_META = os.path.join(TEMP_DIR, 'batch_meta')
+CREDS_DIR = 'Overload Creds'
 MVAL_REP = os.path.join(TEMP_DIR, 'marcedit_validation_report.txt')
 CVAL_REP = os.path.join(TEMP_DIR, 'combined_validation_report.txt')
 LSPEC_REP = os.path.join(TEMP_DIR, 'local_specs_report.txt')
