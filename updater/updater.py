@@ -16,14 +16,14 @@ def run_update(src_directory):
         # kill the app
         try:
             subprocess.call(
-                "TASKKILL /F /IM overload.exe",
+                'TASKKILL /F /IM overload.exe',
                 creationflags=CREATE_NO_WINDOW)
             time.sleep(1)
         except:
             pass
 
         # delete content of the main folder except updater.exe
-        entries = [f for f in os.listdir(".") if 'updater' not in f]
+        entries = [f for f in os.listdir('.') if 'updater' not in f]
         for f in entries:
             if os.path.isdir(f):
                 shutil.rmtree(f)
@@ -38,8 +38,15 @@ def run_update(src_directory):
             else:
                 shutil.copy2(src_directory + '\\' + f, os.getcwd())
 
+        # apply patches
+        # find if any new patches have been copied
+        entries = [f for f in os.listdir('.') if 'patch' in f]
+        # run patches in order
+        for f in sorted(entries):
+            subprocess.call(f, creationflags=CREATE_NO_WINDOW)
+
         subprocess.call(
-            "overload.exe",
+            'overload.exe',
             creationflags=CREATE_NO_WINDOW)
 
 
