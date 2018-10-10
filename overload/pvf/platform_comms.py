@@ -1,14 +1,15 @@
 # module responsible for PVF communication with Platform
 
-import shelve
-import logging
 import base64
 from datetime import datetime
+import logging
 from requests.exceptions import ConnectionError, Timeout
+import shelve
+
 
 from connectors.platform import AuthorizeAccess, PlatformSession
-from pvf import queries
 from errors import OverloadError, APITokenError, APITokenExpiredError
+from pvf import queries
 from setup_dirs import USER_DATA
 
 
