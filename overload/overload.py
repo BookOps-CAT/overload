@@ -1,30 +1,33 @@
 # GUI for OpsUtils
 
+import base64
+import calendar
+import datetime
+import keyring
+from keyring.backends.Windows import WinVaultKeyring
+import logging
+import logging.config
+import loggly.handlers
+import os
+import os.path
+import re
+import shelve
+import subprocess
 import Tkinter as tk
 import ttk
 import tkMessageBox
 import tkFileDialog
-import shelve
-import os
-import os.path
-import subprocess
-import logging
-import logging.config
-import loggly.handlers
-import re
-import base64
-import datetime
-import calendar
 
 
-from gui_utils import BusyManager, ToolTip
-from setup_dirs import *
-from logging_setup import LOGGING
-from pvf.pvf_gui import ProcessVendorFiles
 from datastore import session_scope, PVR_Batch
 from db_worker import retrieve_values
+import credentials
+from gui_utils import BusyManager, ToolTip
+from logging_setup import LOGGING
+from pvf.pvf_gui import ProcessVendorFiles
 from pvf.reports import cumulative_nypl_stats, cumulative_bpl_stats, \
     cumulative_vendor_stats
+from setup_dirs import *
 
 
 def updates(manual=True):
@@ -822,18 +825,16 @@ class SierraAPIs(tk.Frame):
                 client_id = None
             else:
                 client_id = self.client_id.get()
-            client_id = base64.b64encode(client_id)
+            encoded_client_id = base64.b64encode(client_id)
             if self.client_secret.get() == '' or \
                     self.client_secret.get() == 'None':
                 client_secret = None
             else:
                 client_secret = self.client_secret.get()
-            client_secret = base64.b64encode(client_secret)
 
             new_conn = dict(
                 host=self.host.get(),
-                client_id=client_id,
-                client_secret=client_secret,
+                client_id=encoded_client_id,
                 library=self.library.get(),
                 method='SierraAPI')
 
@@ -845,6 +846,11 @@ class SierraAPIs(tk.Frame):
                 APIs = user_data['SierraAPIs']
             APIs[new_conn_name] = new_conn
             user_data.close()
+
+            # store critical data in Windows Vault
+            credentials.standard_to_vault(
+                self.host.get(), client_id, client_secret)
+
             tkMessageBox.showinfo('Input', 'Settings have been saved')
             self.observer()
 
@@ -910,6 +916,14 @@ class SierraAPIs(tk.Frame):
         else:
             if tkMessageBox.askokcancel('Deletion', 'delete connection?'):
                 user_data = shelve.open(USER_DATA, writeback=True)
+                conn = user_data['SierraAPIs'][self.conn_name.get()]
+
+                # delete from Windows Vault
+                keyring.delete_password(
+                    conn['host'],
+                    base64.b64decode(conn['client_id']))
+
+                # delete from user_data
                 user_data['SierraAPIs'].pop(self.conn_name.get(), None)
                 user_data.close()
                 # update indexes & reset to blank form
@@ -932,7 +946,10 @@ class SierraAPIs(tk.Frame):
                 self.library.set(conn['library'])
                 self.host.set(conn['host'])
                 self.client_id.set(base64.b64decode(conn['client_id']))
-                self.client_secret.set(base64.b64decode(conn['client_secret']))
+                self.client_secret.set(
+                    credentials.standard_from_vault(
+                        conn['host'],
+                        base64.b64decode(conn['client_id'])))
             except KeyError:
                 pass
             finally:
@@ -1117,19 +1134,18 @@ class PlatformAPIs(tk.Frame):
                 client_id = None
             else:
                 client_id = self.client_id.get()
-            client_id = base64.b64encode(client_id)
+            encoded_client_id = base64.b64encode(client_id)
             if self.client_secret.get() == '' or \
                     self.client_secret.get() == 'None':
                 client_secret = None
             else:
                 client_secret = self.client_secret.get()
-            client_secret = base64.b64encode(client_secret)
 
+            # save info in shelf
             new_conn = dict(
                 oauth_server=oauth_server,
                 host=self.host.get(),
-                client_id=client_id,
-                client_secret=client_secret,
+                client_id=encoded_client_id,
                 last_token=None,
                 method='Platform API',
                 library='NYPL')
@@ -1142,6 +1158,11 @@ class PlatformAPIs(tk.Frame):
                 APIs = user_data['PlatformAPIs']
             APIs[new_conn_name] = new_conn
             user_data.close()
+
+            # store critical data in Windows Vault
+            credentials.standard_to_vault(
+                oauth_server, client_id, client_secret)
+
             tkMessageBox.showinfo('Input', 'Settings have been saved')
             self.observer()
 
@@ -1211,6 +1232,14 @@ class PlatformAPIs(tk.Frame):
         else:
             if tkMessageBox.askokcancel('Deletion', 'delete connection?'):
                 user_data = shelve.open(USER_DATA, writeback=True)
+
+                # delete creds from Windows Vault
+                conn = user_data['PlatformAPIs'][self.conn_name.get()]
+                keyring.delete_password(
+                    conn['oauth_server'],
+                    base64.b64decode(conn['client_id']))
+
+                # delete from user_data
                 user_data['PlatformAPIs'].pop(self.conn_name.get(), None)
                 user_data.close()
                 # update indexes & reset to blank form
@@ -1233,7 +1262,11 @@ class PlatformAPIs(tk.Frame):
                 self.oauth_server.set(conn['oauth_server'])
                 self.host.set(conn['host'])
                 self.client_id.set(base64.b64decode(conn['client_id']))
-                self.client_secret.set(base64.b64decode(conn['client_secret']))
+                # retrieve secret from Windows Vault
+                secret = credentials.standard_from_vault(
+                    self.oauth_server.get(),
+                    self.client_id.get())
+                self.client_secret.set(secret)
             except KeyError:
                 pass
             finally:
@@ -1802,6 +1835,9 @@ if __name__ == "__main__":
     # set up app logger
     logging.config.dictConfig(LOGGING)
     overload_logger = logging.getLogger('overload_console')
+
+    # set the backend for credentials
+    keyring.set_keyring(WinVaultKeyring())
 
     # launch application
     app = MainApplication()
