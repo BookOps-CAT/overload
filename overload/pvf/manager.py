@@ -1,34 +1,34 @@
 # handles and oversees processing of vendor records (top level below gui)
 # logging and passing exception to gui happens here
-import os
+
 from datetime import datetime, date
-import shelve
 import logging
+import os
+import shelve
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 
 
+from analyzer import PVR_NYPLReport, PVR_BPLReport
+from bibs import patches
 from bibs.bibs import VendorBibMeta, read_marc21, \
     create_target_id_field, write_marc21, check_sierra_id_presence, \
     sierra_format_tag, create_field_from_template, \
     db_template_to_960, db_template_to_961, db_template_to_949
-from bibs import patches
 from bibs.crosswalks import platform2meta, bibs2meta
 from bibs.dedup import dedup_marc_file
-from platform_comms import open_platform_session, platform_queries_manager
-from z3950_comms import z3950_query_manager
-from pvf.vendors import vendor_index, identify_vendor, get_query_matchpoint
-from pvf import reports
-from analyzer import PVR_NYPLReport, PVR_BPLReport
-from setup_dirs import BATCH_STATS, BATCH_META, USER_DATA, BARCODES
-from errors import OverloadError, APITokenExpiredError
-from utils import remove_files
 from datastore import session_scope, Vendor, \
     PVR_Batch, PVR_File, NYPLOrderTemplate
 from db_worker import insert_or_ignore, retrieve_values, \
     retrieve_record, update_nypl_template, delete_record
+from errors import OverloadError, APITokenExpiredError
+from platform_comms import open_platform_session, platform_queries_manager
+from pvf.vendors import vendor_index, identify_vendor, get_query_matchpoint
+from pvf import reports
+from setup_dirs import BATCH_STATS, BATCH_META, USER_DATA, BARCODES
+from utils import remove_files
 from validators.default import validate_processed_files_integrity
-
+from z3950_comms import z3950_query_manager
 
 module_logger = logging.getLogger('overload_console.pvr_manager')
 
