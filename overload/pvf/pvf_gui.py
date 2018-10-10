@@ -1,35 +1,35 @@
+from datetime import date
+from ftplib import error_perm
+import logging
+import os
+import os.path
+import shelve
+import shutil
+import time
 import Tkinter as tk
 import ttk
 import tkMessageBox
 import tkFileDialog
-import shelve
-import os.path
-import shutil
-import logging
-import os
-import time
-from datetime import date
-from ftplib import error_perm
 
 
 from bibs import bibs
-from validation import validate_files
-from validators.marcedit import delete_validation_report
-from gui_utils import ToolTip, BusyManager
-import overload_help
-import reports
-from errors import OverloadError
-from manager import run_processing, save_stats, save_template, \
-    update_template, delete_template, get_template_names
+import bibs.sierra_dicts as sd
 from datastore import NYPLOrderTemplate, session_scope
 from db_worker import retrieve_record
-from setup_dirs import MY_DOCS, USER_DATA, CVAL_REP, \
-    LSPEC_REP, DVAL_REP, BATCH_META, BATCH_STATS
-import bibs.sierra_dicts as sd
+from errors import OverloadError
 from ftp_manager import store_connection, delete_connection, \
     get_ftp_connections, get_connection_details, connect2ftp, \
     disconnect_ftp, read_ftp_content, move2ftp, move2local
+from gui_utils import ToolTip, BusyManager
+from manager import run_processing, save_stats, save_template, \
+    update_template, delete_template, get_template_names
+import overload_help
+import reports
+from setup_dirs import MY_DOCS, USER_DATA, CVAL_REP, \
+    LSPEC_REP, DVAL_REP, BATCH_META, BATCH_STATS
 from utils import convert_file_size
+from validation import validate_files
+from validators.marcedit import delete_validation_report
 
 
 module_logger = logging.getLogger('overload_console.pvr_gui')
