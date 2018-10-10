@@ -8,6 +8,7 @@ import shelve
 
 
 from connectors.platform import AuthorizeAccess, PlatformSession
+import credentials
 from errors import OverloadError, APITokenError, APITokenExpiredError
 from pvf import queries
 from setup_dirs import USER_DATA
@@ -25,7 +26,7 @@ def open_platform_session(api_name=None):
     return:
         session obj
     """
-    module_logger.info('Preping to open Platform session.')
+    module_logger.debug('Preping to open Platform session.')
     reusing_token = False
     try:
         ud = shelve.open(USER_DATA, writeback=True)
@@ -33,23 +34,25 @@ def open_platform_session(api_name=None):
         # retrieve specified Platform authorization
         conn_data = ud['PlatformAPIs'][api_name]
         client_id = base64.b64decode(conn_data['client_id'])
-        client_secret = base64.b64decode(
-            conn_data['client_secret'])
         auth_server = conn_data['oauth_server']
         base_url = conn_data['host']
         last_token = conn_data['last_token']  # encrypt?
+
+        # retrieve secret from Windows Vault
+        client_secret = credentials.standard_from_vault(
+            auth_server, client_id)
 
         # check if valid token exists and reuse if can
         if last_token is not None:
             if last_token.get('expires_on') < datetime.now():
                 # token expired, request new one
-                module_logger.info(
+                module_logger.debug(
                     'Platform token expired. Requesting new one.')
                 auth = AuthorizeAccess(
                     client_id, client_secret, auth_server)
                 token = auth.get_token()
             else:
-                module_logger.info(
+                module_logger.debug(
                     'Last Platform token still valid. Re-using.')
                 reusing_token = True
                 token = last_token
@@ -65,14 +68,14 @@ def open_platform_session(api_name=None):
             ud['PlatformAPIs'][api_name]['last_token'] = token
 
     except KeyError as e:
-        module_logger.critical(
+        module_logger.error(
             'KeyError in user_data: api name: {}. Error msg:{}'.format(
                 api_name, e))
         raise OverloadError(
-            'Error parsing user_data while retrieving connection info')
+            'Error parsing user_data while retrieving connection info.')
 
     except ValueError as e:
-        module_logger.critical(e)
+        module_logger.error(e)
         raise OverloadError(e)
 
     except APITokenError as e:
@@ -80,7 +83,7 @@ def open_platform_session(api_name=None):
         raise OverloadError(e)
 
     except ConnectionError as e:
-        module_logger.critical(e)
+        module_logger.error(e)
         raise OverloadError(e)
 
     except Timeout as e:
@@ -100,8 +103,8 @@ def open_platform_session(api_name=None):
         module_logger.error(e)
         raise OverloadError(e)
 
-    except APITokenExpiredError:
-        module_logger.critical(e)
+    except APITokenExpiredError as e:
+        module_logger.error(e)
         raise OverloadError(e)
 
 
@@ -116,7 +119,7 @@ def platform_queries_manager(api_type, session, meta, matchpoint):
     return:
         query result
     """
-    module_logger.info('Making new Platform request.')
+    module_logger.debug('Making new Platform request.')
     try:
         result = queries.query_runner(
             api_type, session, meta, matchpoint)
@@ -130,19 +133,18 @@ def platform_queries_manager(api_type, session, meta, matchpoint):
     except ConnectionError as e:
         module_logger.error(
             'ConnectionError while running Platform queries. '
-            'Closing session and terminating processing.')
+            'Closing session and aborting processing.')
         session.close()
         raise OverloadError(e)
 
     except Timeout as e:
         module_logger.error(
             'Timeout error while running Platform queries. '
-            'Closing session and terminating processing')
+            'Closing session and aborting processing.')
         session.close()
         raise OverloadError(e)
 
     except ValueError as e:
         session.close()
-        module_logger.error(
-            e)
+        module_logger.error(e)
         raise OverloadError(e)
