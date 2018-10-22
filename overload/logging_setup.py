@@ -1,3 +1,6 @@
+import traceback
+
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -32,7 +35,7 @@ DEV_LOGGING = {
             'format': '%(name)s-%(asctime)s-%(filename)s-%(lineno)s-%(levelname)s-%(levelno)s-%(message)s'
         },
         'standard': {
-            'format': '{"app":"%(name)s", "asciTime":"%(asctime)s", "filename":"%(filename)s", "lineNo":"%(lineno)d", "levelName":"%(levelname)s", "message":"%(message)s"}'
+            'format': '{"app":"%(name)s", "asciTime":"%(asctime)s", "fileName":"%(filename)s", "lineNo":"%(lineno)d", "levelName":"%(levelname)s", "message":"%(message)s"}'
         },
     },
     'handlers': {
@@ -49,15 +52,42 @@ DEV_LOGGING = {
         },
     },
     'loggers': {
-        'overload-dev': {
-            'handlers': ['loggly'],
-            'level': 'DEBUG',
-            'propagate': True
-        },
-        'overload_console': {
-            'handlers': ['console'],
+        'overload': {
+            'handlers': ['console', 'loggly'],
             'level': 'DEBUG',
             'propagate': True
         }
     }
 }
+
+
+def format_traceback(exc, exc_traceback=None):
+    """
+    Formats logging tracebacks into a format accepted by Loggly service.
+    args:
+        exc: type, exceptions
+        exc_traceback: type, traceback obtained from sys.exc_info()
+    returns:
+        traceback, string with removed double quotes, line breaks, and double
+                   backslashes
+
+    usage:
+        try:
+            int('a')
+        except ValueError as exc:
+            _, _, exc_traceback = sys.exc_info()
+            tb = format_traceback(exc, exc_traceback)
+            logger.error('Unhandled error. {}'.format(tb))
+    """
+
+    if exc_traceback is None:
+        exc_traceback = exc.__traceback__
+    tb_lines = [
+        line.replace(
+            '"', "'").replace(
+            "\n", "\\n").replace(
+            '\\', '/') for line in
+        traceback.format_exception(exc.__class__, exc, exc_traceback)
+    ]
+
+    return ''.join(tb_lines)
