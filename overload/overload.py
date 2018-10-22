@@ -1867,7 +1867,7 @@ class GooAPI(tk.Frame):
     def link_GSuite(self):
         # look up update folder and determine path to
         # credential file
-        self.creds = credentials.locate_goo_credentials()
+        self.creds = credentials.locate_goo_credentials(USER_DATA, GOO_CREDS)
         if self.creds:
             if not os.path.isfile(self.creds):
                 overload_logger.error(

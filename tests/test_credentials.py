@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
-import unittest
-import os
 import keyring
+import os
+import shelve
+import unittest
 
 
 from context import credentials
+from setup_dirs import USER_DATA, GOO_CREDS, GOO_FOLDERS
 
 
 class TestCredentials(unittest.TestCase):
@@ -17,10 +19,19 @@ class TestCredentials(unittest.TestCase):
         self.app = 'myapp-test'
         self.user = 'test_user1'
         self.passw = 'test-pass'
+        self.user_data = 'test_user_data'
+        self.goo_folders = 'tests\\goo_folders.json'
 
     def tearDown(self):
         try:
             os.remove(self.encrypt_creds)
+        except WindowsError:
+            pass
+
+        try:
+            if os.path.exists(self.user_data):
+                shelve.open(self.user_data).clear()
+                os.remove(self.user_data)
         except WindowsError:
             pass
         try:
@@ -28,10 +39,10 @@ class TestCredentials(unittest.TestCase):
         except keyring.errors.PasswordDeleteError:
             pass
 
-    def test_identify_credential_location(self):
-        loc = credentials.identify_credentials_location()
+    def test_locate_goo_credentials(self):
+        loc = credentials.locate_goo_credentials(USER_DATA, GOO_CREDS)
         self.assertTrue(
-            os.path.isdir(loc))
+            os.path.exists(loc))
 
     def test_encrypt_file_data_produces_file(self):
         credentials.encrypt_file_data(
@@ -51,11 +62,67 @@ class TestCredentials(unittest.TestCase):
 
     def test_storing_and_retrieving_pass_from_Windows_vault(self):
         self.assertIsNone(
-            credentials.standard_to_vault(
+            credentials.store_in_vault(
                 self.app, self.user, self.passw))
         self.assertEqual(
-            credentials.standard_from_vault(self.app, self.user),
+            credentials.get_from_vault(self.app, self.user),
             self.passw)
+
+    def test_store_goo_folder_ids_returns_False_when_update_dir_not_specified(self):
+        # populate shelve with appropriate values
+        u = shelve.open(self.user_data, writeback=True)
+        u['paths'] = {'update_dir': ''}
+        # test the structure
+        self.assertIn('paths', u)
+        p = u['paths']
+        self.assertIn('update_dir', p)
+        u.close()
+
+        # test the main condition
+        self.assertFalse(
+            credentials.store_goo_folder_ids(
+                self.user_data, self.goo_folders))
+
+    def test_store_goo_folder_ids_returns_False_when_shelve_poorly_constructed(self):
+        # populate shelve with appropriate values
+        u = shelve.open(self.user_data, writeback=True)
+        # test the structure
+        self.assertNotIn('paths', u)
+        u.close()
+
+        # test the main condition
+        self.assertFalse(
+            credentials.store_goo_folder_ids(
+                self.user_data, self.goo_folders))
+
+    def test_store_goo_folder_ids_returns_False_when_folder_ids_json_missing(self):
+        # populate shelve with appropriate values
+        u = shelve.open(self.user_data, writeback=True)
+        u['paths'] = {'update_dir': os.getcwd()}
+        # test the structure
+        self.assertIn('paths', u)
+        p = u['paths']
+        self.assertIn('update_dir', p)
+        u.close()
+
+        self.assertFalse(
+            credentials.store_goo_folder_ids(
+                self.user_data, 'missing_file.json'))
+
+    def test_store_goo_folder_ids_returns_True(self):
+        # populate shelve with appropriate values
+        u = shelve.open(self.user_data, writeback=True)
+        u['paths'] = {'update_dir': os.getcwd()}
+        # test the structure
+        self.assertIn('paths', u)
+        p = u['paths']
+        self.assertIn('update_dir', p)
+        u.close()
+
+        self.assertTrue(
+            credentials.store_goo_folder_ids(
+                self.user_data, self.goo_folders))
+
 
 
 if __name__ == '__main__':
