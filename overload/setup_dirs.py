@@ -2,6 +2,7 @@
 
 import os
 
+USER_NAME = os.environ['USERNAME']
 APP_DIR = os.path.join(os.environ['APPDATA'], 'Overload')
 MY_DOCS = os.path.expanduser(os.sep.join(["~", "Documents"]))
 TEMP_DIR = os.path.join(APP_DIR, 'temp')
