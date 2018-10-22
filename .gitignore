@@ -108,3 +108,4 @@ platform_res*.json
 PyZ3950_parsetab.py
 updater/raction_db.py
 updater/datastore.db
+overload/logging_setup.py
