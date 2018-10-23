@@ -28,7 +28,7 @@ from connectors.goo_settings.access_names import GAPP, GUSER
 import credentials
 from errors import OverloadError
 from gui_utils import BusyManager, ToolTip
-from logging_setup import LOGGING, DEV_LOGGING
+from logging_setup import LOGGING, DEV_LOGGING, LogglyAdapter
 import overload_help
 from pvf.pvf_gui import ProcessVendorFiles
 from pvf.reports import cumulative_nypl_stats, cumulative_bpl_stats, \
@@ -2130,7 +2130,8 @@ if __name__ == "__main__":
 
     # set up app logger
     logging.config.dictConfig(DEV_LOGGING)
-    overload_logger = logging.getLogger('overload')
+    logger = logging.getLogger('overload')
+    overload_logger = LogglyAdapter(logger, None)
 
     # set the backend for credentials
     keyring.set_keyring(WinVaultKeyring())

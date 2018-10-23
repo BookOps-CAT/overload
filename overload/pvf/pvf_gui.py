@@ -24,7 +24,7 @@ from ftp_manager import store_connection, delete_connection, \
     get_ftp_connections, get_connection_details, connect2ftp, \
     disconnect_ftp, read_ftp_content, move2ftp, move2local
 from gui_utils import ToolTip, BusyManager
-from logging_setup import format_traceback
+from logging_setup import format_traceback, LogglyAdapter
 from manager import run_processing, save_stats, save_template, \
     update_template, delete_template, get_template_names
 import overload_help
@@ -37,7 +37,7 @@ from validation import validate_files
 from validators.marcedit import delete_validation_report
 
 
-module_logger = logging.getLogger('overload')
+module_logger = LogglyAdapter(logging.getLogger('overload'), None)
 
 
 class TransferFiles(tk.Frame):

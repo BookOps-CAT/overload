@@ -5,9 +5,10 @@ import logging
 
 from connectors import goo
 from errors import OverloadError
+from logging_setup import LogglyAdapter
 
 
-module_logger = logging.getLogger('overload')
+module_logger = LogglyAdapter(logging.getLogger('overload'), None)
 
 
 def name_pvf_sheet(report_type):

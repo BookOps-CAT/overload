@@ -10,11 +10,12 @@ import shelve
 from connectors.platform import AuthorizeAccess, PlatformSession
 import credentials
 from errors import OverloadError, APITokenError, APITokenExpiredError
+from logging_setup import LogglyAdapter
 from pvf import queries
 from setup_dirs import USER_DATA
 
 
-module_logger = logging.getLogger('overload_console.pvr_plat_comms')
+module_logger = LogglyAdapter(logging.getLogger('overload'), None)
 
 
 def open_platform_session(api_name=None):
@@ -39,14 +40,14 @@ def open_platform_session(api_name=None):
         last_token = conn_data['last_token']  # encrypt?
 
         # retrieve secret from Windows Vault
-        client_secret = credentials.standard_from_vault(
+        client_secret = credentials.get_from_vault(
             auth_server, client_id)
 
         # check if valid token exists and reuse if can
         if last_token is not None:
             if last_token.get('expires_on') < datetime.now():
                 # token expired, request new one
-                module_logger.debug(
+                module_logger.info(
                     'Platform token expired. Requesting new one.')
                 auth = AuthorizeAccess(
                     client_id, client_secret, auth_server)
@@ -57,7 +58,7 @@ def open_platform_session(api_name=None):
                 reusing_token = True
                 token = last_token
         else:
-            module_logger.info('Requesting Platform access token.')
+            module_logger.debug('Requesting Platform access token.')
             auth = AuthorizeAccess(
                 client_id, client_secret, auth_server)
             token = auth.get_token()
@@ -79,15 +80,15 @@ def open_platform_session(api_name=None):
         raise OverloadError(e)
 
     except APITokenError as e:
-        module_logger.error(e)
+        module_logger.error('Platform API Token Error: {}'.format(e))
         raise OverloadError(e)
 
     except ConnectionError as e:
-        module_logger.error(e)
+        module_logger.error('Platform Connection Error: {}'.format(e))
         raise OverloadError(e)
 
     except Timeout as e:
-        module_logger.error(e)
+        module_logger.error('Platform Timeout Error: {}'.format(e))
         raise OverloadError(e)
 
     finally:
@@ -95,7 +96,7 @@ def open_platform_session(api_name=None):
 
     # open Platform session
     try:
-        module_logger.info('Auth obtained. Opening Platform session.')
+        module_logger.debug('Auth obtained. Opening Platform session.')
         session = PlatformSession(base_url, token)
         return session
 
@@ -104,7 +105,7 @@ def open_platform_session(api_name=None):
         raise OverloadError(e)
 
     except APITokenExpiredError as e:
-        module_logger.error(e)
+        module_logger.error('Platform API token expired: {}'.format(e))
         raise OverloadError(e)
 
 

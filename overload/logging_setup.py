@@ -1,3 +1,4 @@
+import logging
 import traceback
 
 
@@ -61,15 +62,27 @@ DEV_LOGGING = {
 }
 
 
+class LogglyAdapter(logging.LoggerAdapter):
+    """
+    Adapter for Loggly service that escapes JSON special characters in msg
+    """
+
+    def process(self, msg, kwargs):
+        return '%s' % (
+            msg.replace('\\', '/').
+            replace('"', "'").
+            replace('\n', '\\n').
+            replace('\t', '\\t')), kwargs
+
+
 def format_traceback(exc, exc_traceback=None):
     """
-    Formats logging tracebacks into a format accepted by Loggly service.
+    Formats logging tracebacks into a string accepted by Loggly service (JSON).
     args:
         exc: type, exceptions
         exc_traceback: type, traceback obtained from sys.exc_info()
     returns:
-        traceback, string with removed double quotes, line breaks, and double
-                   backslashes
+        traceback: string of joined traceback lines
 
     usage:
         try:
@@ -82,12 +95,6 @@ def format_traceback(exc, exc_traceback=None):
 
     if exc_traceback is None:
         exc_traceback = exc.__traceback__
-    tb_lines = [
-        line.replace(
-            '"', "'").replace(
-            "\n", "\\n").replace(
-            '\\', '/') for line in
-        traceback.format_exception(exc.__class__, exc, exc_traceback)
-    ]
 
-    return ''.join(tb_lines)
+    return ''.join(
+        traceback.format_exception(exc.__class__, exc, exc_traceback))
