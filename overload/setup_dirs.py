@@ -4,6 +4,8 @@ import os
 
 USER_NAME = os.environ['USERNAME']
 APP_DIR = os.path.join(os.environ['APPDATA'], 'Overload')
+LOG_DIR = os.path.join(APP_DIR, 'changesLog')
+PATCHING_RECORD = os.path.join(LOG_DIR, 'patching_record.txt')
 MY_DOCS = os.path.expanduser(os.sep.join(["~", "Documents"]))
 TEMP_DIR = os.path.join(APP_DIR, 'temp')
 BARCODES = os.path.join(TEMP_DIR, 'batch_barcodes.txt')
