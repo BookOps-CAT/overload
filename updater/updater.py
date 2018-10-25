@@ -7,8 +7,12 @@ import subprocess
 from distutils.dir_util import copy_tree
 
 
+APP_DIR = os.path.join(os.environ['APPDATA'], 'Overload')
+LOG_DIR = os.path.join(APP_DIR, 'changesLog')
+PATCHING_RECORD = os.path.join(LOG_DIR, 'patching_record.txt')
+
+
 def run_update(src_directory):
-    # print 'source dir:', src_directory
     if os.path.isfile('overload.exe'):
 
         CREATE_NO_WINDOW = 0x08000000
@@ -40,10 +44,19 @@ def run_update(src_directory):
 
         # apply patches
         # find if any new patches have been copied
-        entries = [f for f in os.listdir('.') if 'patch' in f]
+        found_patches = [f for f in os.listdir('.') if 'patch' in f]
+
+        # find patches already applied (we don't want to run the same ones
+        # every single update)
+        installed_patches = []
+        if os.path.isfile(PATCHING_RECORD):
+            with open(PATCHING_RECORD, 'r') as file:
+                installed_patches = [line[:5] for line in file.readlines()]
+
         # run patches in order
-        for f in sorted(entries):
-            subprocess.call(f, creationflags=CREATE_NO_WINDOW)
+        for f in sorted(found_patches):
+            if f[6:11] not in installed_patches:
+                subprocess.call(f, creationflags=CREATE_NO_WINDOW)
 
         subprocess.call(
             'overload.exe',
