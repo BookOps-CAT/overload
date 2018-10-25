@@ -1881,17 +1881,18 @@ class GooAPI(tk.Frame):
                 # ask for decryption key, decrypt creds and
                 # store in Windows vault
                 self.ask_decryption_key()
+                self.wait_window(self.top)
         else:
             overload_logger.error(
                 'User settings error. Missing "Overload Creds" directory')
-            m = 'Unable to locate "Overload Creds" folder with  the' \
+            m = 'Unable to locate "Overload Creds" folder with ' \
                 '"goo_credentials.bin" file on the shared drive. \n' \
                 'Specify correct upgrade folder at  \n'\
                 'Settings>Default Directories>Upgrade Folder and try again.'
             tkMessageBox.showerror('Settings Error', m)
 
         # verify and store in user_data g-drive folder ids
-        if not credentials.store_goo_folder_ids():
+        if not credentials.store_goo_folder_ids(USER_DATA, GOO_FOLDERS):
             overload_logger.error(
                 'User settings error. '
                 'Unable to located goo_folders.json file.')
@@ -2102,6 +2103,11 @@ class About(tk.Frame):
             with open('version.txt') as fh:
                 for line in fh:
                     info += line
+            if os.path.isfile(PATCHING_RECORD):
+                with open(PATCHING_RECORD, 'r') as fh:
+                    info += '\ninstalled patches:\n'
+                    for line in fh:
+                        info += '  {}'.format(line)
             credits = ''
             with open('./help/icon_credits.txt') as fh:
                 for line in fh:
