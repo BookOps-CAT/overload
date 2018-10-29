@@ -2777,6 +2777,7 @@ class ProcessVendorFiles(tk.Frame):
                 # get sheet id
                 sheet_id = goo.get_latest_file_id_in_folder(
                     goo_auth, sheet_name, parent_id)
+
                 # if doesn't exist create one
                 if not sheet_id:
                     sheet_id = goo_comms.create_sheet_for_system(
@@ -2822,6 +2823,7 @@ class ProcessVendorFiles(tk.Frame):
 
                 # determine google sheet name
                 sheet_name = goo_comms.name_pvf_sheet('callnos')
+                tabs = ['errors']
 
                 # determine if such sheet exists
                 # get authorization
@@ -2832,7 +2834,6 @@ class ProcessVendorFiles(tk.Frame):
 
                 # if doesn't exist create one
                 if not sheet_id:
-                    tabs = ['errors']
                     sheet_id = goo_comms.create_sheet_for_system(
                         self.last_used_sys, goo_auth, sheet_name,
                         tabs, parent_id)
