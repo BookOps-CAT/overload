@@ -74,11 +74,16 @@ patch_logger.info('Initiating patch 0.0.2.')
 
 applied = False
 
-with open(PATCHING_RECORD, 'r') as file:
-    if '0.0.2' in [line[:5] for line in file.readlines()]:
-        # skip patching in this case
-        patch_logger.debug('patch 0.0.2 already installed')
-        applied = True
+try:
+    with open(PATCHING_RECORD, 'r') as file:
+        if '0.0.2' in [line[:5] for line in file.readlines()]:
+            # skip patching in this case
+            patch_logger.debug('patch 0.0.2 already installed')
+            applied = True
+except IOError:
+    # file does not exist
+    patch_logger.info('patching_record.txt does not exist - will create one')
+    pass
 
 if not applied:
     # check if user_data present
