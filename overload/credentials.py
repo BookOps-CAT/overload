@@ -58,7 +58,7 @@ def store_goo_folder_ids(shelf_fh, goo_folders_fh):
                 # retrieve folder ids
                 with open(goo_ids_file, 'r') as source:
                     data = json.load(source)
-                    # store in user data
+                    # store in user_data
                     user_data['gdrive'] = dict(
                         nypl_folder_id=data['nypl_gdrive_folder_id'],
                         bpl_folder_id=data['bpl_gdrive_folder_id'])
