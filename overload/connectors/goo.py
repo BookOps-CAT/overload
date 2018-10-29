@@ -126,18 +126,21 @@ def get_latest_file_id_in_folder(auth, file_name, parent_id):
     """
 
     # run drive query to find sheet id
+
     # compose query
     query = "mimeType='application/vnd.google-apps.spreadsheet' and " \
             "'{}' in parents and " \
             "name='{}'".format(
                 parent_id,
                 file_name)
+
     # run the query
     service = discovery.build('drive', 'v3', http=auth.authorize(Http()))
     response = service.files().list(
         q=query,
         pageSize=5,
         fields='nextPageToken, files(createdTime, id)').execute()
+
     items = response.get('files', [])
     if items == []:
         return None
