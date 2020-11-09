@@ -7,7 +7,7 @@ import subprocess
 from distutils.dir_util import copy_tree
 
 
-APP_DIR = os.path.join(os.environ['APPDATA'], 'Overload')
+APP_DIR = os.path.join(os.environ['USERPROFILE'], 'BookOps Apps\\Overload')
 LOG_DIR = os.path.join(APP_DIR, 'changesLog')
 PATCHING_RECORD = os.path.join(LOG_DIR, 'patching_record.txt')
 
