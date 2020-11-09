@@ -5,9 +5,9 @@ p = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, p + "\\" + p.split("\\")[-1])
 sys.path.insert(0, p)
 
-from overload.datastore import session_scope, WCHit
-from overload.db_worker import retrieve_record
-from overload.bibs.crosswalks import xml2string, string2xml
+from overload.datastore import session_scope, WCHit, WCSourceMeta
+from overload.db_worker import retrieve_record, retrieve_related
+from overload.bibs.crosswalks import xml2string, string2xml, marcxml2array
 from overload.bibs.xml_bibs import ONS, get_record_leader
 from overload.connectors.worldcat.session import has_records
 
