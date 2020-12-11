@@ -118,3 +118,5 @@ temp*.py
 # logging configuration
 overload/logging_setup.py
 tests/temp
+creds.bin
+creds.json
