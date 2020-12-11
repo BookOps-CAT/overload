@@ -86,7 +86,7 @@ def updates(manual=True):
                         overload_logger.debug(
                             "Local and update directory versions are " "the same"
                         )
-                        m = "Babel is up-to-date"
+                        m = "Overload is up-to-date"
                         tkMessageBox.showinfo("Info", m)
         else:
             overload_logger.error(
