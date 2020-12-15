@@ -2226,6 +2226,6 @@ if __name__ == "__main__":
     s.configure("Small.TLabel", font=("Helvetica", 8))
     s.configure("Medium.Treeview", font=("Helvetica", 9))
 
-    updates(manual=False)
+    # updates(manual=False)
 
     app.mainloop()

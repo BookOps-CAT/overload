@@ -55,3 +55,4 @@ from overload.wc2sierra.source_parsers import (
     parse_BPL_order_export,
     parse_NYPL_order_export,
 )
+from updater.updater import APP_DIR, LOG_DIR, PATCHING_RECORD
