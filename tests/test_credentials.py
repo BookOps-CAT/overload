@@ -41,8 +41,9 @@ class TestCredentials(unittest.TestCase):
 
     def test_locate_credentials(self):
         loc = credentials.locate_credentials(USER_DATA, GOO_CREDS)
-        self.assertTrue(
-            os.path.exists(loc))
+        if loc is not None:
+            self.assertTrue(
+                os.path.exists(loc))
 
     def test_encrypt_file_data_produces_file(self):
         credentials.encrypt_file_data(
@@ -122,7 +123,6 @@ class TestCredentials(unittest.TestCase):
         self.assertTrue(
             credentials.store_goo_folder_ids(
                 self.user_data, self.goo_folders))
-
 
 
 if __name__ == '__main__':
