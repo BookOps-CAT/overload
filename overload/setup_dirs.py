@@ -3,7 +3,7 @@
 import os
 
 USER_NAME = os.environ["USERNAME"]
-APP_DIR = os.path.join(os.environ["USERPROFILE"], "BookOps Apps\\Overload")
+APP_DIR = os.path.join(os.environ["LOCALAPPDATA"], "Overload")
 LOG_DIR = os.path.join(APP_DIR, "changesLog")
 PATCHING_RECORD = os.path.join(LOG_DIR, "patching_record.txt")
 MY_DOCS = os.path.expanduser(os.sep.join(["~", "Documents"]))
@@ -16,7 +16,7 @@ BATCH_META = os.path.join(TEMP_DIR, "batch_meta")
 GETBIB_REP = os.path.join(TEMP_DIR, "getbib-report.csv")
 W2S_MULTI_ORD = os.path.join(TEMP_DIR, "w2s-multi-orders.csv")
 W2S_SKIPPED_ORD = os.path.join(TEMP_DIR, "w2s-skipped-orders.csv")
-WORLDCAT_CREDS = "Overload Creds/Worldcat"
+WORLDCAT_CREDS = "Overload Creds\\Worldcat"
 GOO_CREDS = "Overload Creds\\Google\\goo_credentials.bin"
 GOO_FOLDERS = "Overload Creds\\Google\\goo_folders.json"
 MVAL_REP = os.path.join(TEMP_DIR, "marcedit_validation_report.txt")
