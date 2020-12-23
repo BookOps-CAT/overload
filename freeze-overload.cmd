@@ -6,5 +6,6 @@ pyinstaller --clean --windowed --onefile ^
     --add-data="./rules;rules" ^
     --add-data="./help;help" ^
     --add-data="version.txt;." ^
+    --add-data="ocreds.bin;." ^
     --version-file="windows_version_info.txt" ^
     overload.py
