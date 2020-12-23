@@ -600,16 +600,34 @@ class Settings(tk.Frame):
         self.parent = parent
         tk.Frame.__init__(self, parent, background="white")
         self.controller = controller
+        self.decrypt_key = tk.StringVar()
+        self.decrypt_msg = tk.StringVar()
 
         self.rowconfigure(0, minsize=25)
-        self.rowconfigure(2, minsize=10)
-        self.rowconfigure(4, minsize=200)
-        self.rowconfigure(10, minsize=25)
+        self.rowconfigure(2, minsize=25)
+        self.rowconfigure(4, minsize=25)
+        self.rowconfigure(6, minsize=150)
+        # self.rowconfigure(10, minsize=100)
         self.columnconfigure(0, minsize=30)
         self.columnconfigure(2, minsize=20)
         self.columnconfigure(4, minsize=20)
         self.columnconfigure(8, minsize=50)
         self.columnconfigure(10, minsize=30)
+
+        # auto-credentials button
+        apiICO = tk.PhotoImage(file="./icons/key-lock.gif")
+        self.auto_credsBtn = ttk.Button(
+            self,
+            image=apiICO,
+            text="auto credentials",
+            compound=tk.TOP,
+            cursor="hand2",
+            width=15,
+            command=self.auto_credentials)
+        self.auto_credsBtn.image = apiICO
+        self.auto_credsBtn.grid(
+            row=1, column=1, sticky="snew"
+        )
 
         foldersICO = tk.PhotoImage(file="./icons/folders.gif")
         self.defaultDirBtn = ttk.Button(
@@ -621,11 +639,10 @@ class Settings(tk.Frame):
             width=15,
             command=lambda: controller.show_frame("DefaultDirs"),
         )
+
         # prevent image to be garbage collected by Python
         self.defaultDirBtn.image = foldersICO
-        self.defaultDirBtn.grid(row=1, column=1, sticky="snew")
-
-        apiICO = tk.PhotoImage(file="./icons/key-lock.gif")
+        self.defaultDirBtn.grid(row=3, column=1, sticky="snew")
 
         self.platform_apiBtn = ttk.Button(
             self,
@@ -638,7 +655,7 @@ class Settings(tk.Frame):
         )
 
         self.platform_apiBtn.image = apiICO
-        self.platform_apiBtn.grid(row=1, column=3, sticky="snew")
+        self.platform_apiBtn.grid(row=3, column=3, sticky="snew")
 
         self.goo_apiBtn = ttk.Button(
             self,
@@ -651,7 +668,7 @@ class Settings(tk.Frame):
         )
 
         self.goo_apiBtn.image = apiICO
-        self.goo_apiBtn.grid(row=1, column=5, sticky="snew")
+        self.goo_apiBtn.grid(row=3, column=5, sticky="snew")
 
         self.z3950_apiBtn = ttk.Button(
             self,
@@ -663,7 +680,7 @@ class Settings(tk.Frame):
             command=lambda: controller.show_frame("Z3950s"),
         )
         self.z3950_apiBtn.image = apiICO
-        self.z3950_apiBtn.grid(row=3, column=1, sticky="snew")
+        self.z3950_apiBtn.grid(row=5, column=1, sticky="snew")
 
         self.sierra_apiBtn = ttk.Button(
             self,
@@ -676,7 +693,7 @@ class Settings(tk.Frame):
         )
 
         self.sierra_apiBtn.image = apiICO
-        self.sierra_apiBtn.grid(row=3, column=3, sticky="snew")
+        self.sierra_apiBtn.grid(row=5, column=3, sticky="snew")
 
         self.wc_apiBtn = ttk.Button(
             self,
@@ -689,7 +706,7 @@ class Settings(tk.Frame):
         )
 
         self.wc_apiBtn.image = apiICO
-        self.wc_apiBtn.grid(row=3, column=5, sticky="snew")
+        self.wc_apiBtn.grid(row=5, column=5, sticky="snew")
 
         self.closeBtn = ttk.Button(
             self,
@@ -698,8 +715,196 @@ class Settings(tk.Frame):
             width=15,
             command=lambda: controller.show_frame("Main"),
         )
-        self.closeBtn.grid(row=5, column=1, sticky="sew")
+        self.closeBtn.grid(row=7, column=1, sticky="sew")
 
+    def auto_credentials(self):
+        aTop = tk.Toplevel(self, background='white')
+        aTop.iconbitmap("./icons/SledgeHammer.ico")
+        aTop.title("Decrypting credentials")
+
+        infoFrm = ttk.LabelFrame(aTop, text="please provide decryption key:")
+        infoFrm.grid(row=0, column=0, padx=20, pady=20)
+        infoFrm.columnconfigure(1, minsize=20)
+        infoFrm.rowconfigure(1, minsize=100)
+
+        keyEnt = tk.Entry(infoFrm, textvariable=self.decrypt_key, show="*", width=50)
+        keyEnt.grid(row=0, column=0, columnspan=3, padx=10, pady=20)
+
+        decrLbl = ttk.Label(infoFrm, textvariable=self.decrypt_msg)
+        decrLbl.grid(row=1, column=0, columnspa=3, padx=10, pady=20)
+
+        decrBtn = ttk.Button(
+            infoFrm,
+            text="decrypt",
+            command=self.run_decryption)
+        decrBtn.grid(
+            row=2, column=0, padx=10, pady=10
+        )
+
+        closeBtn = ttk.Button(
+            infoFrm,
+            text="close",
+            command=aTop.destroy)
+        closeBtn.grid(row=2, column=2, padx=10, pady=20)
+
+    def run_decryption(self):
+        errors = []
+        try:
+            data = credentials.decrypt_file_data(
+                self.decrypt_key.get().strip(), "ocreds.bin")
+            data = json.loads(data)
+        except OverloadError as exc:
+            self.decrypt_msg.set("Invalid key: %s" % exc)
+
+        else:
+            # save BPl Z3950 configuration
+            for lib, conf in data["Z3950"].iteritems():
+                if conf is not None:
+                    success, msg = self.auto_save_z3950(lib, conf)
+
+                    if not success:
+                        errors.append(msg)
+
+            # save NYPL Platform creds
+            success, msg = self.auto_platform(data["Platform"])
+            if not success:
+                errors.append(msg)
+
+            # save Worldcat creds
+            success, msg = self.auto_worldcat(data["Worldcat"])
+            if not success:
+                errors.append(msg)
+
+            # save Google creds
+            success, msg = self.auto_google(data["Gdrive"])
+            if not success:
+                errors.append(msg)
+
+            if len(errors) == 0:
+                self.decrypt_msg.set("Decryption successful!")
+            else:
+                # print("found: %s errors: %s" % (len(errors), errors))
+                self.decrypt_msg.set("\n* ".join(errors))
+
+    def auto_platform(self, platform_data):
+        # save info in shelf
+        try:
+            encoded_client_id = base64.b64encode(platform_data["client-id"])
+            conn = dict(
+                oauth_server=platform_data["oauth-server"],
+                host=platform_data["host"],
+                client_id=encoded_client_id,
+                last_token=None,
+                method="Platform API",
+                library="NYPL",
+            )
+
+            user_data = shelve.open(USER_DATA, writeback=True)
+            if "PlatformAPIs" in user_data:
+                APIs = user_data["PlatformAPIs"]
+            else:
+                user_data["PlatformAPIs"] = {}
+                APIs = user_data["PlatformAPIs"]
+            APIs["NYPL PROD"] = conn
+            user_data.close()
+
+            # store critical data in Windows Vault
+            credentials.store_in_vault(
+                platform_data["oauth-server"],
+                platform_data["client-id"],
+                platform_data["client-secret"])
+        except Exception as exc:
+            err_msg = "Platform error: %s" % exc
+            return (False, err_msg)
+        else:
+            return (True, None)
+
+    def auto_save_z3950(self, library, conf):
+        try:
+            user_data = shelve.open(USER_DATA, writeback=True)
+            conn = dict(
+                host=conf["host"],
+                database=conf["database"],
+                port=conf["port"],
+                user=conf["user"],
+                password=conf["password"],
+                syntax=conf["syntax"],
+                library=library,
+                method="Z3950",
+            )
+            if "Z3950s" in user_data:
+                Z3950s = user_data["Z3950s"]
+            else:
+                user_data["Z3950s"] = {}
+                Z3950s = user_data["Z3950s"]
+            Z3950s[conf["name"]] = conn
+            user_data.close()
+        except Exception as exc:
+            err_msg = "Z3950 error: %s" % exc
+            return (False, err_msg)
+        else:
+            return (True, None)
+
+    def auto_worldcat(self, conf):
+        try:
+            nypl_apis = dict()
+            bpl_apis = dict()
+
+            for lib_cred in conf:
+                name = lib_cred["name"]
+                cred_str = json.dumps(lib_cred)
+                credentials.store_in_vault(name, "Overload", cred_str)
+
+                # add credentials names to user_data for retrieval
+                details = {"last_token": None, "expires_on": None}
+                if lib_cred["library"] == "NYPL":
+                    nypl_apis[name] = details
+                elif lib_cred["library"] == "BPL":
+                    bpl_apis[name] = details
+            wc_apis = dict(NYPL=nypl_apis, BPL=bpl_apis)
+            user_data = shelve.open(USER_DATA)
+            user_data["WorldcatAPIs"] = wc_apis
+            user_data.close()
+        except Exception as exc:
+            err_msg = "Worldcat error: %s" % exc
+            return (False, err_msg)
+        else:
+            return (True, None)
+
+    def auto_google(self, conf):
+        # store google drive report folders ids
+        token = None
+
+        try:
+            user_data = shelve.open(USER_DATA, writeback=True)
+            user_data["gdrive"] = dict(
+                nypl_folder_id=conf["folders"]["nypl_gdrive_folder_id"],
+                bpl_folder_id=conf["folders"]["bpl_gdrive_folder_id"])
+
+            user_data.close()
+
+            # store temp json file
+            cred_fh = os.path.join(TEMP_DIR, "credentials.json")
+            with open(cred_fh, "w") as file:
+                json.dump(conf["creds"], file, encoding="utf-8")
+
+                # insert credentials into Windows Vault
+                # will open browser to complete the operation
+            token = goo.store_access_token(
+                GAPP, GUSER, cred_fh, [SHEET_SCOPE, FDRIVE_SCOPE]
+                )
+        except Exception as exc:
+            err_msg = "GDrive error: %s" % exc
+        finally:
+            try:
+                os.remove(cred_fh)
+            except:
+                pass
+
+            if token:
+                return (True, None)
+            else:
+                return (False, err_msg)
 
 class SierraAPIs(tk.Frame):
 
@@ -1977,7 +2182,7 @@ class GooAPI(tk.Frame):
         # verify and store in user_data g-drive folder ids
         if not credentials.store_goo_folder_ids(USER_DATA, GOO_FOLDERS):
             overload_logger.error(
-                "User settings error. " "Unable to located goo_folders.json file."
+                "User settings error. " "Unable to locate goo_folders.json file."
             )
             m = (
                 'Unable to locate "goo_folder.json" file on the shared '
