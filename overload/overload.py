@@ -892,7 +892,7 @@ class Settings(tk.Frame):
                 # will open browser to complete the operation
             token = goo.store_access_token(
                 GAPP, GUSER, cred_fh, [SHEET_SCOPE, FDRIVE_SCOPE]
-                )
+            )
         except Exception as exc:
             err_msg = "GDrive error: %s" % exc
         finally:
