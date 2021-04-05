@@ -56,7 +56,7 @@ REQUIRED = [
     "requests-futures==0.9.7",
     "requests-mock==1.4.0",
     "requests-oauthlib==0.8.0",
-    "rsa==4.0",
+    "rsa==4.1",
     "six==1.11.0",
     "SQLAlchemy==1.3.8",
     "unicodecsv==0.14.1",
