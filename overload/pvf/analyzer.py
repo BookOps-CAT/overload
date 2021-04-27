@@ -19,7 +19,7 @@ class PVRReport:
         self.target_title = None
         self.target_callNo = None
         self.inhouse_dups = []
-        self.action = 'insert'
+        self.action = "insert"
 
         self._determine_resource_id()
         self._determine_vendor_callNo()
@@ -34,9 +34,9 @@ class PVRReport:
             self.vendor_id = self._meta_vendor.t024[0]
 
     def _determine_vendor_callNo(self):
-        if self._meta_vendor.dstLibrary == 'branches':
+        if self._meta_vendor.dstLibrary == "branches":
             self.vendor_callNo = self._meta_vendor.bCallNumber
-        elif self._meta_vendor.dstLibrary == 'research':
+        elif self._meta_vendor.dstLibrary == "research":
             try:
                 self.vendor_callNo = self._meta_vendor.rCallNumber[0]
             except IndexError:
@@ -68,11 +68,10 @@ class PVRReport:
 
     def _determine_callNo_match(self, meta_inhouse):
         match = False
-        if self._meta_vendor.dstLibrary == 'branches':
+        if self._meta_vendor.dstLibrary == "branches":
             if meta_inhouse.bCallNumber is None:
                 match = True
-            elif self._meta_vendor.bCallNumber == \
-                    meta_inhouse.bCallNumber:
+            elif self._meta_vendor.bCallNumber == meta_inhouse.bCallNumber:
                 match = True
         return match
 
@@ -95,11 +94,11 @@ class PVR_NYPLReport(PVRReport):
 
         self._group_by_library()
 
-        if agent == 'cat':
+        if agent == "cat":
             self._cataloging_workflow()
-        elif agent == 'sel':
+        elif agent == "sel":
             self._selection_workflow()
-        elif agent == 'acq':
+        elif agent == "acq":
             self._acquisition_workflow()
 
     def _group_by_library(self):
@@ -108,7 +107,7 @@ class PVR_NYPLReport(PVRReport):
             if self._meta_vendor.dstLibrary == meta.ownLibrary:
                 # correct library
                 self._matched.append(meta)
-            elif meta.ownLibrary == 'mixed':
+            elif meta.ownLibrary == "mixed":
                 self.mixed.append(meta.sierraId)
             else:
                 # other library
@@ -125,9 +124,8 @@ class PVR_NYPLReport(PVRReport):
             for meta in self._matched:
                 c += 1
                 # full record scenario
-                if meta.bCallNumber is not None or \
-                        len(meta.rCallNumber) > 0:
-                    if self._meta_vendor.dstLibrary == 'branches':
+                if meta.bCallNumber is not None or len(meta.rCallNumber) > 0:
+                    if self._meta_vendor.dstLibrary == "branches":
                         # check if call number matches
                         call_match = self._determine_callNo_match(meta)
                         if call_match:
@@ -135,15 +133,15 @@ class PVR_NYPLReport(PVRReport):
                             self._set_target_id(meta.sierraId)
                             self.target_title = meta.title
                             self.target_callNo = meta.bCallNumber
-                            if meta.catSource == 'inhouse':
-                                self.action = 'attach'
+                            if meta.catSource == "inhouse":
+                                self.action = "attach"
                             else:
                                 updated = self._compare_update_timestamp(meta)
                                 if updated:
                                     self.updated_by_vendor = True
-                                    self.action = 'overlay'
+                                    self.action = "overlay"
                                 else:
-                                    self.action = 'attach'
+                                    self.action = "attach"
                             # do not check any further
                             break
                         else:
@@ -151,32 +149,31 @@ class PVR_NYPLReport(PVRReport):
                                 self._set_target_id(meta.sierraId)
                                 self.target_title = meta.title
                                 self.target_callNo = meta.bCallNumber
-                                if meta.catSource == 'inhouse':
-                                    self.action = 'attach'
+                                if meta.catSource == "inhouse":
+                                    self.action = "attach"
                                 else:
-                                    updated = self._compare_update_timestamp(
-                                        meta)
+                                    updated = self._compare_update_timestamp(meta)
                                     if updated:
                                         self.updated_by_vendor = True
-                                        self.action = 'overlay'
+                                        self.action = "overlay"
                                     else:
-                                        self.action = 'attach'
+                                        self.action = "attach"
                     else:
                         # research path, no callNo match checking
                         self.callNo_match = True
                         # set_target_id
                         self._set_target_id(meta.sierraId)
                         self.target_title = meta.title
-                        self.target_callNo = ','.join(meta.rCallNumber)
-                        if meta.catSource == 'inhouse':
-                            self.action = 'attach'
+                        self.target_callNo = ",".join(meta.rCallNumber)
+                        if meta.catSource == "inhouse":
+                            self.action = "attach"
                         else:
                             updated = self._compare_update_timestamp(meta)
                             if updated:
                                 self.updated_by_vendor = True
-                                self.action = 'overlay'
+                                self.action = "overlay"
                             else:
-                                self.action = 'attach'
+                                self.action = "attach"
                         break
                 else:
                     # brief record matching dstLibrary
@@ -186,7 +183,7 @@ class PVR_NYPLReport(PVRReport):
                         self.callNo_match = True
                         self._set_target_id(meta.sierraId)
                         self.target_title = meta.title
-                        self.action = 'overlay'
+                        self.action = "overlay"
         if n > 1:
             self.inhouse_dups = [meta.sierraId for meta in self._matched]
 
@@ -198,24 +195,23 @@ class PVR_NYPLReport(PVRReport):
             c = 0
             for meta in self._matched:
                 c += 1
-                if meta.bCallNumber is not None or \
-                        len(meta.rCallNumber) > 0:
+                if meta.bCallNumber is not None or len(meta.rCallNumber) > 0:
                     # full bib situation
-                    self.action = 'attach'
+                    self.action = "attach"
                     self.target_sierraId = meta.sierraId
 
                     # determine Sierra target call number
-                    if self._meta_vendor.dstLibrary == 'branches':
+                    if self._meta_vendor.dstLibrary == "branches":
                         self.target_callNo = meta.bCallNumber
                         break
-                    elif self._meta_vendor.dstLibrary == 'research':
-                        self.target_callNo = ','.join(meta.rCallNumber)
+                    elif self._meta_vendor.dstLibrary == "research":
+                        self.target_callNo = ",".join(meta.rCallNumber)
                         break
                 else:
                     # brief record situation
                     if c == n:
                         # no other bibs to consider
-                        self.action = 'attach'
+                        self.action = "attach"
                         self.target_sierraId = meta.sierraId
         if n > 1:
             self.inhouse_dups = [meta.sierraId for meta in self._matched]
@@ -224,30 +220,32 @@ class PVR_NYPLReport(PVRReport):
         # all actions = 'insert'!
         n = len(self._matched)
         self.callNo_match = True
-        self.action = 'insert'
+        self.action = "insert"
         if n > 0:
             self.inhouse_dups = [meta.sierraId for meta in self._matched]
 
     def to_dict(self):
         return {
-            'vendor_id': self.vendor_id,
-            'vendor': self.vendor,
-            'updated_by_vendor': self.updated_by_vendor,
-            'callNo_match': self.callNo_match,
-            'target_callNo': self.target_callNo,
-            'vendor_callNo': self.vendor_callNo,
-            'inhouse_dups': self.inhouse_dups,
-            'target_sierraId': self.target_sierraId,
-            'target_title': self.target_title,
-            'mixed': self.mixed,
-            'other': self.other,
-            'action': self.action}
+            "vendor_id": self.vendor_id,
+            "vendor": self.vendor,
+            "updated_by_vendor": self.updated_by_vendor,
+            "callNo_match": self.callNo_match,
+            "target_callNo": self.target_callNo,
+            "vendor_callNo": self.vendor_callNo,
+            "inhouse_dups": self.inhouse_dups,
+            "target_sierraId": self.target_sierraId,
+            "target_title": self.target_title,
+            "mixed": self.mixed,
+            "other": self.other,
+            "action": self.action,
+        }
 
     def __repr__(self):
-        return "<PVF Report(vendor_id={}, vendor={}, " \
-            "callNo_match={}, target_callNo={}, vendor_callNo={}, " \
-            "updated_by_vendor={}, " \
-            "inhouse_dups={}, target_sierraId={}, mixed={}, "\
+        return (
+            "<PVF Report(vendor_id={}, vendor={}, "
+            "callNo_match={}, target_callNo={}, vendor_callNo={}, "
+            "updated_by_vendor={}, "
+            "inhouse_dups={}, target_sierraId={}, mixed={}, "
             "other={}, action={})>".format(
                 self.vendor_id,
                 self.vendor,
@@ -255,11 +253,13 @@ class PVR_NYPLReport(PVRReport):
                 self.target_callNo,
                 self.vendor_callNo,
                 self.updated_by_vendor,
-                ','.join(self.inhouse_dups),
+                ",".join(self.inhouse_dups),
                 self.target_sierraId,
-                ','.join(self.mixed),
-                ','.join(self.other),
-                self.action)
+                ",".join(self.mixed),
+                ",".join(self.other),
+                self.action,
+            )
+        )
 
 
 class PVR_BPLReport(PVRReport):
@@ -272,7 +272,7 @@ class PVR_BPLReport(PVRReport):
         PVRReport.__init__(self, meta_vendor, meta_inhouse)
         self._matched = meta_inhouse
 
-        if agent == 'cat':
+        if agent == "cat":
             self._cataloging_workflow()
 
     def _cataloging_workflow(self):
@@ -283,10 +283,9 @@ class PVR_BPLReport(PVRReport):
             self.callNo_match = True
 
             # special vendors with separate workflow
-            spec_vendors = [
-                'Midwest DVD', 'Midwest Audio', 'Midwest CD']
+            spec_vendors = ["Midwest DVD", "Midwest Audio", "Midwest CD"]
             if self.vendor in spec_vendors:
-                self.action = 'attach'
+                self.action = "attach"
         elif n > 0:
             c = 0
             for meta in self._matched:
@@ -298,60 +297,65 @@ class PVR_BPLReport(PVRReport):
                     if call_match:
                         self.callNo_match = True
                         self.target_sierraId = meta.sierraId
+                        self.target_title = meta.title
                         self.target_callNo = meta.bCallNumber
-                        if meta.catSource == 'inhouse':
-                            self.action = 'attach'
+                        if meta.catSource == "inhouse":
+                            self.action = "attach"
                         else:
                             updated = self._compare_update_timestamp(meta)
                             if updated:
                                 self.updated_by_vendor = True
-                                self.action = 'overlay'
+                                self.action = "overlay"
                             else:
-                                self.action = 'attach'
+                                self.action = "attach"
                         # do not check any further
                         break
                     else:
                         # no more records to check
                         if c == n:
                             self.target_sierraId = meta.sierraId
+                            self.target_title = meta.title
                             self.target_callNo = meta.bCallNumber
-                            if meta.catSource == 'inhouse':
-                                self.action = 'attach'
+                            if meta.catSource == "inhouse":
+                                self.action = "attach"
                             else:
-                                updated = self._compare_update_timestamp(
-                                    meta)
+                                updated = self._compare_update_timestamp(meta)
                                 if updated:
                                     self.updated_by_vendor = True
-                                    self.action = 'overlay'
+                                    self.action = "overlay"
                                 else:
-                                    self.action = 'attach'
+                                    self.action = "attach"
                 else:
                     # brief record matching dstLibrary
                     # overlay the earliest record
                     if c == n:
                         # no other bibs to consider
                         self.callNo_match = True
+                        self.target_title = meta.title
                         self.target_sierraId = meta.sierraId
-                        self.action = 'overlay'
+                        self.action = "overlay"
         if n > 1:
             self.inhouse_dups = [meta.sierraId for meta in self._matched]
 
     def to_dict(self):
         return {
-            'vendor_id': self.vendor_id,
-            'vendor': self.vendor,
-            'updated_by_vendor': self.updated_by_vendor,
-            'callNo_match': self.callNo_match,
-            'target_callNo': self.target_callNo,
-            'vendor_callNo': self.vendor_callNo,
-            'inhouse_dups': self.inhouse_dups,
-            'target_sierraId': self.target_sierraId,
-            'action': self.action}
+            "vendor_id": self.vendor_id,
+            "vendor": self.vendor,
+            "updated_by_vendor": self.updated_by_vendor,
+            "callNo_match": self.callNo_match,
+            "target_callNo": self.target_callNo,
+            "vendor_callNo": self.vendor_callNo,
+            "target_title": self.target_title,
+            "inhouse_dups": self.inhouse_dups,
+            "target_sierraId": self.target_sierraId,
+            "action": self.action,
+        }
 
     def __repr__(self):
-        return "<PVF Report(vendor_id={}, vendor={}, " \
-            "callNo_match={}, target_callNo={}, vendor_callNo={}, " \
-            "updated_by_vendor={}, " \
+        return (
+            "<PVF Report(vendor_id={}, vendor={}, "
+            "callNo_match={}, target_callNo={}, vendor_callNo={}, "
+            "updated_by_vendor={}, "
             "inhouse_dups={}, target_sierraId={}, action={})>".format(
                 self.vendor_id,
                 self.vendor,
@@ -359,6 +363,8 @@ class PVR_BPLReport(PVRReport):
                 self.target_callNo,
                 self.vendor_callNo,
                 self.updated_by_vendor,
-                ','.join(self.inhouse_dups),
+                ",".join(self.inhouse_dups),
                 self.target_sierraId,
-                self.action)
+                self.action,
+            )
+        )
