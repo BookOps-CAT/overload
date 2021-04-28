@@ -16,21 +16,29 @@ from pvf.z3950_comms import z3950_query_manager
 from utils import save2csv
 
 
-module_logger = LogglyAdapter(logging.getLogger('overload'), None)
+module_logger = LogglyAdapter(logging.getLogger("overload"), None)
 
 
 def run_platform_queries(api_type, session, meta_in, matchpoint):
     try:
-        results = platform_queries_manager(
-            api_type, session, meta_in, matchpoint)
+        results = platform_queries_manager(api_type, session, meta_in, matchpoint)
         return results
     except OverloadError:
         raise
 
 
 def launch_process(
-        system, library, target, id_type, action, source_fh, dst_fh,
-        progbar, hit_counter, nohit_counter):
+    system,
+    library,
+    target,
+    id_type,
+    action,
+    source_fh,
+    dst_fh,
+    progbar,
+    hit_counter,
+    nohit_counter,
+):
     """
     manages retrieval of bibs or bibs numbers based on
     args:
@@ -69,112 +77,112 @@ def launch_process(
                     dups.add(rid)
                 else:
                     ids.append(rid)
-        progbar['maximum'] = c
+        progbar["maximum"] = c
 
     # determine correct matchpoint based on id_type
-    if id_type == 'ISBN':
-        matchpoint = '020'
-    elif id_type == 'ISSN':
-        matchpoint = '022'
-    elif id_type == 'UPC':
-        matchpoint = '024'
-    elif id_type == 'OCLC #':
-        matchpoint = '001'
+    if id_type == "ISBN":
+        matchpoint = "020"
+    elif id_type == "ISSN":
+        matchpoint = "022"
+    elif id_type == "UPC":
+        matchpoint = "024"
+    elif id_type == "OCLC #":
+        matchpoint = "001"
     else:
-        raise OverloadError(
-            'Query by {} not yet implemented'.format(
-                id_type))
+        raise OverloadError("Query by {} not yet implemented".format(id_type))
 
     # determine destination API
-    if target['method'] == 'Platform API':
-        module_logger.debug('Creating Platform API session.')
+    if target["method"] == "Platform API":
+        module_logger.debug("Creating Platform API session.")
         try:
-            session = open_platform_session(target['name'])
+            session = open_platform_session(target["name"])
         except OverloadError:
             raise
-    elif target['method'] == 'Z3950':
-        module_logger.debug('retrieving Z3950 settings for {}'.format(
-            target['name']))
+    elif target["method"] == "Z3950":
+        module_logger.debug("retrieving Z3950 settings for {}".format(target["name"]))
         user_data = shelve.open(USER_DATA)
-        target = user_data['Z3950s'][target['name']]
+        target = user_data["Z3950s"][target["name"]]
         user_data.close()
 
     for i in ids:
         meta_in = BibOrderMeta(
-            system=system, dstLibrary=library)  # like vendor meta in PVR
+            system=system, dstLibrary=library
+        )  # like vendor meta in PVR
         meta_in.dstLibrary = library
-        if id_type == 'ISBN':
+        if id_type == "ISBN":
             meta_in.t020 = [i]
-        elif id_type == 'ISSN':
+        elif id_type == "ISSN":
             meta_in.t022 = [i]
-        elif id_type == 'UPC':
+        elif id_type == "UPC":
             meta_in.t024 = [i]
-        elif id_type == 'OCLC #':
+        elif id_type == "OCLC #":
             meta_in.t001 = i
 
         module_logger.debug(str(meta_in))
 
         # query NYPL Platform
-        if target['method'] == 'Platform API':
+        if target["method"] == "Platform API":
             try:
                 result = platform_queries_manager(
-                    target['method'], session, meta_in, matchpoint)
+                    target["method"], session, meta_in, matchpoint
+                )
             except APITokenExpiredError:
                 module_logger.info(
-                    'Platform token expired. '
-                    'Requesting new one and opening new session.')
-                session = open_platform_session(target['method'])
+                    "Platform token expired. "
+                    "Requesting new one and opening new session."
+                )
+                session = open_platform_session(target["method"])
                 result = platform_queries_manager(
-                    target['method'], session, meta_in, matchpoint)
+                    target["method"], session, meta_in, matchpoint
+                )
 
             meta_out = []
-            if result[0] == 'hit':
+            if result[0] == "hit":
                 hit_counter.set(hit_counter.get() + 1)
                 meta_out = platform2meta(result[1])
-            elif result[0] == 'nohit':
+            elif result[0] == "nohit":
                 nohit_counter.set(nohit_counter.get() + 1)
 
-        elif target['method'] == 'Z3950':
+        elif target["method"] == "Z3950":
             meta_out = []
-            status, bibs = z3950_query_manager(
-                target, meta_in, matchpoint)
-            if status == 'hit':
+            status, bibs = z3950_query_manager(target, meta_in, matchpoint)
+            if status == "hit":
                 hit_counter.set(hit_counter.get() + 1)
                 meta_out = bibs2meta(bibs)
-            elif status == 'nohit':
+            elif status == "nohit":
                 nohit_counter.set(nohit_counter.get() + 1)
 
-        if system == 'NYPL':
-            analysis = PVR_NYPLReport('cat', meta_in, meta_out)
-        elif system == 'BPL':
-            analysis = PVR_BPLReport('cat', meta_in, meta_out)
+        if system == "NYPL":
+            analysis = PVR_NYPLReport("cat", meta_in, meta_out)
+        elif system == "BPL":
+            analysis = PVR_BPLReport("cat", meta_in, meta_out)
         module_logger.debug(str(analysis))
 
         if not header:
             header = analysis.to_dict().keys()
-            header.insert(0, 'pos')
+            header.insert(0, "pos")
             save2csv(GETBIB_REP, header)
         if analysis.target_sierraId:
-            analysis.target_sierraId = 'b{}a'.format(analysis.target_sierraId)
+            analysis.target_sierraId = "b{}a".format(analysis.target_sierraId)
         row = analysis.to_dict().values()
-        row.insert(0, progbar['value'])
+        row.insert(0, progbar["value"])
         save2csv(GETBIB_REP, row)
 
-        progbar['value'] += 1
+        progbar["value"] += 1
         progbar.update()
 
     # record data about the batch
     timestamp_end = datetime.now()
     user_data = shelve.open(USER_DATA)
-    user_data['getbib_batch'] = {
-        'timestamp': timestamp_start,
-        'time_elapsed': timestamp_end - timestamp_start,
-        'total_queries': c,
-        'target': target,
-        'hits': hit_counter.get(),
-        'misses': nohit_counter.get(),
-        'dup_count': d,
-        'dups': dups
+    user_data["getbib_batch"] = {
+        "timestamp": timestamp_start,
+        "time_elapsed": timestamp_end - timestamp_start,
+        "total_queries": c,
+        "target": target,
+        "hits": hit_counter.get(),
+        "misses": nohit_counter.get(),
+        "dup_count": d,
+        "dups": dups,
     }
     user_data.close()
-    progbar['value'] = progbar['maximum']
+    progbar["value"] = progbar["maximum"]

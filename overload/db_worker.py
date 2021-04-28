@@ -41,16 +41,18 @@ def retrieve_records(session, model, **kwargs):
 def retrieve_related(session, model, related, **kwargs):
     # retrieves a record and related data from other
     # tables based on created relationship
-    instances = session.query(model).options(
-        subqueryload(related)).filter_by(**kwargs).all()
+    instances = (
+        session.query(model).options(subqueryload(related)).filter_by(**kwargs).all()
+    )
     return instances
 
 
 def retrieve_one_related(session, model, related, **kwargs):
     # retrieves a record and related data from other
     # tables based on created relationship
-    instances = session.query(model).options(
-        subqueryload(related)).filter_by(**kwargs).one()
+    instances = (
+        session.query(model).options(subqueryload(related)).filter_by(**kwargs).one()
+    )
     return instances
 
 

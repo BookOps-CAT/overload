@@ -623,11 +623,10 @@ class Settings(tk.Frame):
             compound=tk.TOP,
             cursor="hand2",
             width=15,
-            command=self.auto_credentials)
-        self.auto_credsBtn.image = apiICO
-        self.auto_credsBtn.grid(
-            row=1, column=1, sticky="snew"
+            command=self.auto_credentials,
         )
+        self.auto_credsBtn.image = apiICO
+        self.auto_credsBtn.grid(row=1, column=1, sticky="snew")
 
         foldersICO = tk.PhotoImage(file="./icons/folders.gif")
         self.defaultDirBtn = ttk.Button(
@@ -718,7 +717,7 @@ class Settings(tk.Frame):
         self.closeBtn.grid(row=7, column=1, sticky="sew")
 
     def auto_credentials(self):
-        aTop = tk.Toplevel(self, background='white')
+        aTop = tk.Toplevel(self, background="white")
         aTop.iconbitmap("./icons/SledgeHammer.ico")
         aTop.title("Decrypting credentials")
 
@@ -733,25 +732,18 @@ class Settings(tk.Frame):
         decrLbl = ttk.Label(infoFrm, textvariable=self.decrypt_msg)
         decrLbl.grid(row=1, column=0, columnspa=3, padx=10, pady=20)
 
-        decrBtn = ttk.Button(
-            infoFrm,
-            text="decrypt",
-            command=self.run_decryption)
-        decrBtn.grid(
-            row=2, column=0, padx=10, pady=10
-        )
+        decrBtn = ttk.Button(infoFrm, text="decrypt", command=self.run_decryption)
+        decrBtn.grid(row=2, column=0, padx=10, pady=10)
 
-        closeBtn = ttk.Button(
-            infoFrm,
-            text="close",
-            command=aTop.destroy)
+        closeBtn = ttk.Button(infoFrm, text="close", command=aTop.destroy)
         closeBtn.grid(row=2, column=2, padx=10, pady=20)
 
     def run_decryption(self):
         errors = []
         try:
             data = credentials.decrypt_file_data(
-                self.decrypt_key.get().strip(), "ocreds.bin")
+                self.decrypt_key.get().strip(), "ocreds.bin"
+            )
             data = json.loads(data)
         except OverloadError as exc:
             self.decrypt_msg.set("Invalid key: %s" % exc)
@@ -812,7 +804,8 @@ class Settings(tk.Frame):
             credentials.store_in_vault(
                 platform_data["oauth-server"],
                 platform_data["client-id"],
-                platform_data["client-secret"])
+                platform_data["client-secret"],
+            )
         except Exception as exc:
             err_msg = "Platform error: %s" % exc
             return (False, err_msg)
@@ -879,7 +872,8 @@ class Settings(tk.Frame):
             user_data = shelve.open(USER_DATA, writeback=True)
             user_data["gdrive"] = dict(
                 nypl_folder_id=conf["folders"]["nypl_gdrive_folder_id"],
-                bpl_folder_id=conf["folders"]["bpl_gdrive_folder_id"])
+                bpl_folder_id=conf["folders"]["bpl_gdrive_folder_id"],
+            )
 
             user_data.close()
 
@@ -905,6 +899,7 @@ class Settings(tk.Frame):
                 return (True, None)
             else:
                 return (False, err_msg)
+
 
 class SierraAPIs(tk.Frame):
 
