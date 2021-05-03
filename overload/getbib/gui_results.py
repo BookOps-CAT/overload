@@ -140,6 +140,8 @@ class ResultsView(tk.Frame):
             self.reportTxt.insert(tk.END, "REJECTED MIXED BIB TITLES:\n")
             self.reportTxt.insert(tk.END, self.mdf.to_string())
             self.reportTxt.insert(tk.END, "\n{}\n".format("=" * 125))
+        else:
+            self.reportTxt.insert(tk.END, "\n{}\n".format("=" * 125))
         self.reportTxt.insert(tk.END, "REJECTED DUPLICATE BIB TITLES:\n")
         self.reportTxt.insert(tk.END, self.ddf.to_string())
         self.reportTxt.insert(tk.END, "\n{}\n".format("=" * 125))
