@@ -435,7 +435,7 @@ def cumulative_nypl_stats(start_date, end_date):
             "other",
             "vendor",
         ]
-        df = pd.DataFrame.from_records(nypl_results, columns=nypl_labels)
+        df = pd.DataFrame.from_records(results, columns=nypl_labels)
         bdf = df[df["library"] == "branches"]
         bdf = bdf[["vendor", "insert", "attach", "overlay", "mixed", "other"]]
         bdf["total loaded"] = bdf["insert"] + bdf["attach"] + bdf["overlay"]
