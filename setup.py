@@ -62,7 +62,7 @@ REQUIRED = [
     "unicodecsv==0.14.1",
     "Unidecode==1.0.23",
     "uritemplate==3.0.0",
-    "urllib3==1.24.2",
+    "urllib3==1.26.5",
 ]
 
 # requires manual installation of Aaron Lav's PyZ3950
