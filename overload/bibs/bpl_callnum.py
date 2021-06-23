@@ -22,9 +22,12 @@ def remove_special_characters(data):
     """
     this may need to be more sophistacated than below...
     """
-    data = data.replace("`", "")
-    data = data.replace("ʹ", "")
-    return data
+    try:
+        data = data.replace("`", "")
+        data = data.replace("ʹ", "")
+        return data
+    except AttributeError:
+        return None
 
 
 def is_adult_division(locations):
@@ -169,19 +172,18 @@ def create_bpl_callnum(
                 subfields.extend(["a", lang_prefix])
 
             # picture book & easy readers call numbers
-            if is_picture_book(audn_code, tag_300a) \
-                and order_data.callType in (
+            if is_picture_book(audn_code, tag_300a) and order_data.callType in (
                 "pic",
                 "eas",
                 "neu",
             ):
                 subfields.extend(["a", "J-E"])
                 if "100" in cuttering_fields:
-                    cutter = determine_cutter(
-                        cuttering_fields, cutter_type="last_name")
-                    cutter = remove_special_characters(cutter)
-                    subfields.extend(["a", cutter])
-                    call_constructed = True
+                    cutter = determine_cutter(cuttering_fields, cutter_type="last_name")
+                    if cutter:
+                        cutter = remove_special_characters(cutter)
+                        subfields.extend(["a", cutter])
+                        call_constructed = True
                 else:
                     # title entry has only J-E
                     pass
@@ -198,7 +200,8 @@ def create_bpl_callnum(
                 ):
                     if "100" in cuttering_fields:
                         cutter = determine_cutter(
-                            cuttering_fields, cutter_type="last_name")
+                            cuttering_fields, cutter_type="last_name"
+                        )
                         cutter = remove_special_characters(cutter)
                     else:
                         cutter = determine_cutter(
@@ -211,11 +214,15 @@ def create_bpl_callnum(
                 # biography call numbers
                 elif is_biography(
                     leader_string, tag_008, subject_fields
-                ) and order_data.callType in ("neu", "bio",):
+                ) and order_data.callType in (
+                    "neu",
+                    "bio",
+                ):
                     biographee = determine_biographee_name(subject_fields)
                     biographee = remove_special_characters(biographee)
                     cutter = determine_cutter(
-                        cuttering_fields, cutter_type="first_letter")
+                        cuttering_fields, cutter_type="first_letter"
+                    )
                     cutter = remove_special_characters(cutter)
                     if biographee is not None and cutter is not None:
                         subfields.extend(["a", "B", "a", biographee, "a", cutter])
@@ -230,7 +237,8 @@ def create_bpl_callnum(
                         classmark, vetted_audn, order_data.locs
                     )
                     cutter = determine_cutter(
-                        cuttering_fields, cutter_type="first_letter")
+                        cuttering_fields, cutter_type="first_letter"
+                    )
                     cutter = remove_special_characters(cutter)
                     if (
                         not division_conflict
