@@ -677,10 +677,13 @@ class InhouseBibMeta(BibMeta):
                     fields = bib.get_fields("901")
                     for field in fields:
                         if "b" in field:
-                            subfield = field["b"][0]
-                            if "CAT" in subfield:
-                                self.catSource = "inhouse"
-                                break
+                            try:
+                                subfield = field["b"][0]
+                                if "CAT" in subfield:
+                                    self.catSource = "inhouse"
+                                    break
+                            except IndexError:
+                                pass
 
     def _determine_ownLibrary(self, bib, locations):
         # owning library
