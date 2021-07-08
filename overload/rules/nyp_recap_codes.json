@@ -43,27 +43,6 @@
             "opac_msg": "1",
             "status": "b"
         },
-        "MYM": {
-            "loc_code": "RCPM2",
-            "item_type": "55",
-            "agency": "43",
-            "opac_msg": "2",
-            "status": "b"
-        },
-        "MYH": {
-            "loc_code": "RCPH2",
-            "item_type": "55",
-            "agency": "43",
-            "opac_msg": "2",
-            "status": "b"
-        },
-        "MYT": {
-            "loc_code": "RCPT2",
-            "item_type": "55",
-            "agency": "43",
-            "opac_msg": "2",
-            "status": "b"
-        },
         "generic": {
             "loc_code": "MAL92",
             "item_type": "55",
