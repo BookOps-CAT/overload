@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # module general call number rules
+import logging
 
 from pymarc import Field
 
@@ -16,6 +17,10 @@ from parsers import (
     is_fiction,
     get_audience_code,
 )
+from logging_setup import LogglyAdapter
+
+
+module_logger = LogglyAdapter(logging.getLogger("overload"), None)
 
 
 def remove_special_characters(data):
@@ -157,18 +162,25 @@ def create_bpl_callnum(
                full fiction call number
     """
 
+    module_logger.debug("Bib order data: {}".format(order_data))
+
     lang_prefix = parse_language_prefix(tag_008)
+    module_logger.debug("Lang prefix: {}".format(lang_prefix))
     audn_code = get_audience_code(leader_string, tag_008)
+    module_logger.debug("Audn code: {}".format(audn_code))
     vetted_audn = valid_audience(leader_string, tag_008, order_data.audnType)
+    module_logger.debug("vetted_audn: {}".format(vetted_audn))
 
     # construct call number field
     subfields = []
     field = None
     call_constructed = False
     if order_data:
+        module_logger.debug("Bib does have order data.")
         if not order_data.ord_conflicts:
-
+            module_logger.debug("Bib does not have location conflicts.")
             if lang_prefix and order_data.wlPrefix:
+                module_logger.debug("Adding lang prefix to WL bib.")
                 subfields.extend(["a", lang_prefix])
 
             # picture book & easy readers call numbers
@@ -176,7 +188,9 @@ def create_bpl_callnum(
                 "pic",
                 "eas",
                 "neu",
+                None,
             ):
+                module_logger.debug("Bib identified as picture book.")
                 subfields.extend(["a", "J-E"])
                 if "100" in cuttering_fields:
                     cutter = determine_cutter(cuttering_fields, cutter_type="last_name")
@@ -189,13 +203,14 @@ def create_bpl_callnum(
                     pass
             # juvenile call numbers
             elif is_juvenile(audn_code) and order_data.audnType in (None, "j"):
+                module_logger.debug("Bib identified as juvenile material.")
                 subfields.extend(["a", "J"])
 
             # fiction call numbers
             if not call_constructed:
                 if (
                     is_fiction(leader_string, tag_008)
-                    and order_data.callType in ("neu", "fic")
+                    and order_data.callType in ("neu", "fic", None)
                     and not is_picture_book(audn_code, tag_300a)
                 ):
                     if "100" in cuttering_fields:
@@ -214,10 +229,7 @@ def create_bpl_callnum(
                 # biography call numbers
                 elif is_biography(
                     leader_string, tag_008, subject_fields
-                ) and order_data.callType in (
-                    "neu",
-                    "bio",
-                ):
+                ) and order_data.callType in ("bio", "neu"):
                     biographee = determine_biographee_name(subject_fields)
                     biographee = remove_special_characters(biographee)
                     cutter = determine_cutter(
@@ -231,6 +243,7 @@ def create_bpl_callnum(
                 elif is_dewey(leader_string, tag_008) and order_data.callType in (
                     "neu",
                     "dew",
+                    None,
                 ):
                     classmark = parse_dewey(tag_082)
                     division_conflict = has_division_conflict(
