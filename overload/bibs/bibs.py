@@ -1,5 +1,7 @@
 # general tools to read, parse, and write MARC files
 
+import re
+
 from pymarc import MARCReader, JSONReader, MARCWriter, Field
 from pymarc.exceptions import RecordLengthInvalid, RecordDirectoryInvalid
 from datetime import datetime
@@ -812,7 +814,6 @@ class BibOrderMeta:
         self.ord_conflicts = False
         self.callType = None
         self.callLabel = None
-        self.wlPrefix = self._has_world_language_prefix()
         self.audnType = None
         self.bCallNumber = None
         self.rCallNumber = []
@@ -822,6 +823,8 @@ class BibOrderMeta:
         self._determine_callLabel()
         self._determine_callNumber_type()
         self._determine_ord_conflicts()
+
+        self.wlPrefix = self._has_world_language_prefix()
 
     def _normalize_data(self):
         try:
@@ -840,7 +843,7 @@ class BibOrderMeta:
             pass
 
         try:
-            self.locs = self.locs.lower()
+            self.locs = re.sub("multi,", "", self.locs.lower())
         except AttributeError:
             pass
 
