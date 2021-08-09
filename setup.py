@@ -49,7 +49,7 @@ REQUIRED = [
     "pypiwin32==223",
     "python-dateutil==2.6.1",
     "pytz==2017.2",
-    "pywin32==224",
+    "pywin32==301",
     "pywin32-ctypes==0.2.0",
     "PyZ3950==2.04",
     "requests==2.20.0",
