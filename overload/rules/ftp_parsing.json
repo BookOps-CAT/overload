@@ -18,13 +18,13 @@
 		"time_patterns": []
 	},
 	"ftp.ybp.com": {
-		"dir_mark": ["dr", 0, 1],
-		"dir_handle": 59,
-		"file_mark": ["-r", 0, 1],
-		"file_handle": 59,
-		"file_size_pos": [29, 45],
-		"file_time_pos": [46, 58],
-		"time_patterns": ["%b %d %Y","%b %d %H:%S"]
+		"dir_mark": ["<DIR>", 24, 28],
+		"dir_handle": 39,
+		"file_mark": ["     ", 24, 28],
+		"file_handle": 39,
+		"file_size_pos": [29, 37],
+		"file_time_pos": [0, 16],
+		"time_patterns": ["%m-%d-%y %I:%M%p"]
 	},
 	"ftp2.puvill.com": {
 		"dir_mark": ["dr", 0, 1],
