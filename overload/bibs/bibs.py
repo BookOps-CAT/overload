@@ -40,7 +40,7 @@ def create_tag_910(system, library):
     """
     Creates 910 for NYPL records with code for Research or Branches
     """
-    if system == "NYPL":
+    if system == "nypl":
         if library == "branches":
             code = "BL"
         elif library == "research":
