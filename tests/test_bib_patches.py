@@ -457,23 +457,21 @@ class TestRemovingOCLCPrefix(unittest.TestCase):
 
         self.assertEqual(mod_bib.get_fields("001")[0].data, "bl00000001")
 
-    # def test_bib_no_control_tag(self):
-    #     bib = Record()
-    #     bib.leader = '00000nam a2200000u  4500'
-    #     tags = []
-    #     tags.append(
-    #         Field(tag='245',
-    #               indicators=['0', '0'],
-    #               subfields=['a', 'Test title']))
-    #     tags.append(
-    #         Field(tag='091',
-    #               indicators=[' ', ' '],
-    #               subfields=['a', 'GRAPHIC GN FIC COMPOUND NAME']))
-    #     for tag in tags:
-    #         bib.add_ordered_field(tag)
+    def test_bib_with_vendor_910_tag(self):
+        bib = Record()
+        bib.add_field(Field(tag="910", indicators=[" ", " "], subfields=["a", "foo"]))
+        patches.bib_patches("nypl", "research", "acq", "Amalivre", bib)
 
-    #     self.assertIsNone(patches.bib_patches(
-    #         'nypl', 'branches', 'cat', 'Amalivre', bib))
+        tags_910 = bib.get_fields("910")
+        self.assertEqual(len(tags_910), 1)
+        self.assertEqual(str(bib["910"]), "=910  \\\\$aRL")
+
+    def test_bib_without_vendor_910_tag(self):
+        bib = Record()
+        patches.bib_patches("nypl", "branches", "cat", "BT SERIES", bib)
+        tags_910 = bib.get_fields("910")
+        self.assertEqual(len(tags_910), 1)
+        self.assertEqual(str(bib["910"]), "=910  \\\\$aBL")
 
 
 class TestRemoveUnsupportedSubjectHeadings(unittest.TestCase):

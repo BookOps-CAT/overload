@@ -8,6 +8,7 @@ from bibs.bibs import (
     create_initials_field,
     write_marc21,
     create_controlfield,
+    create_tag_910,
     create_target_id_field,
     create_command_line_field,
 )
@@ -89,11 +90,9 @@ def interpret_search_response(response, db_session, wcsmid):
         doc = None
 
     if not rec:
-        insert_or_ignore(
-            db_session, WCHit, wcsmid=wcsmid, hit=hit, query_results=doc)
+        insert_or_ignore(db_session, WCHit, wcsmid=wcsmid, hit=hit, query_results=doc)
     else:
-        update_hit_record(
-            db_session, WCHit, rec.wchid, hit=hit, query_results=doc)
+        update_hit_record(db_session, WCHit, rec.wchid, hit=hit, query_results=doc)
     return hit
 
 
@@ -150,9 +149,7 @@ def request_record(session, oclcNo):
         module_logger.info("Metadata API request skipped: no data to query")
 
 
-def create_local_fields(
-    marcxml, system, library, order_data=None, recap_no=None
-):
+def create_local_fields(marcxml, system, library, order_data=None, recap_no=None):
     module_logger.debug("Creating local fields.")
 
     local_fields = []
@@ -162,6 +159,7 @@ def create_local_fields(
     tag_300a = get_tag_300a(marcxml)
     tag_082 = get_tag_082(marcxml)
     subject_fields = get_subject_fields(marcxml)
+    tag_910 = create_tag_910(system, library)
 
     if system == "NYPL" and library == "branches":
         callNum = create_nypl_callnum(
@@ -175,12 +173,16 @@ def create_local_fields(
         )
         if callNum is not None:
             local_fields.append(callNum)
+
+        local_fields.append(tag_910)
+
     elif system == "NYPL" and library == "research":
         callNum = create_nypl_recap_callnum(recap_no)
         local_fields.append(callNum)
         itemField = create_nypl_recap_item(order_data, recap_no)
         module_logger.debug("Created itemField: {}".format(str(itemField)))
         local_fields.append(itemField)
+        local_fields.append(tag_910)
     elif system == "BPL":
         callNum = create_bpl_callnum(
             leader_string,
@@ -195,8 +197,7 @@ def create_local_fields(
             local_fields.append(callNum)
     else:
         module_logger.warning(
-            "Call number creation for {}-{} not implemented yet".format(
-                system, library)
+            "Call number creation for {}-{} not implemented yet".format(system, library)
         )
 
     return local_fields
@@ -378,15 +379,10 @@ def launch_process(
                 if id_type == "ISBN":
                     for row in reader:
                         meta = BibOrderMeta(
-                            system=system,
-                            dstLibrary=library,
-                            t020=[parse_isbn(row[0])]
+                            system=system, dstLibrary=library, t020=[parse_isbn(row[0])]
                         )
                         insert_or_ignore(
-                            db_session,
-                            WCSourceMeta,
-                            wcsbid=batch_id,
-                            meta=meta
+                            db_session, WCSourceMeta, wcsbid=batch_id, meta=meta
                         )
                         update_progbar(progbar1)
                         update_progbar(progbar2)
@@ -407,10 +403,7 @@ def launch_process(
                             system=system, dstLibrary=library, t001=row[0]
                         )
                         insert_or_ignore(
-                            db_session,
-                            WCSourceMeta,
-                            wcsbid=batch_id,
-                            meta=meta
+                            db_session, WCSourceMeta, wcsbid=batch_id, meta=meta
                         )
                         update_progbar(progbar1)
                         update_progbar(progbar2)
@@ -520,8 +513,7 @@ def launch_process(
                 if not hit:
                     not_found_counter += 1
                     module_logger.debug(
-                        "Unable to find any matches in Worldcat for {}.".format(
-                            m.meta)
+                        "Unable to find any matches in Worldcat for {}.".format(m.meta)
                     )
                     interpret_search_response(None, db_session, m.wcsmid)
 
@@ -546,11 +538,7 @@ def launch_process(
                 fail_types = []
                 if meets_upgrade_criteria(xml_record):
                     if meets_user_criteria(
-                        xml_record,
-                        encode_level,
-                        mat_type,
-                        cat_rules,
-                        cat_source
+                        xml_record, encode_level, mat_type, cat_rules, cat_source
                     ):
                         fulfills = True
                         if action == "upgrade":
@@ -558,11 +546,7 @@ def launch_process(
 
                             oclcNo = get_oclcNo(xml_record)
                             update_hit_record(
-                                db_session,
-                                WCHit,
-                                row.wchid,
-                                match_oclcNo=oclcNo
-
+                                db_session, WCHit, row.wchid, match_oclcNo=oclcNo
                             )
 
                             update_progbar(progbar1)
@@ -575,10 +559,7 @@ def launch_process(
                                 meet_crit_counter.set(meet_crit_counter.get() + 1)
                                 oclcNo = get_oclcNo(xml_record)
                                 update_hit_record(
-                                    db_session,
-                                    WCHit,
-                                    row.wchid,
-                                    match_oclcNo=oclcNo
+                                    db_session, WCHit, row.wchid, match_oclcNo=oclcNo
                                 )
 
                                 update_progbar(progbar1)
@@ -593,8 +574,7 @@ def launch_process(
 
             if not fulfills:
                 if "user" in fail_types:
-                    fail_user_crit_counter.set(
-                        fail_user_crit_counter.get() + 1)
+                    fail_user_crit_counter.set(fail_user_crit_counter.get() + 1)
                 else:
                     fail_glob_crit_counter.set(fail_glob_crit_counter.get() + 1)
 
@@ -609,8 +589,7 @@ def launch_process(
         token = get_token(creds)
         if token.token_str is None:
             module_logger.error(
-                "Worldcat token not obtained. Error: {}.".format(
-                    token.server_response)
+                "Worldcat token not obtained. Error: {}.".format(token.server_response)
             )
         else:
             module_logger.debug("Worldcat token obtained.")
@@ -625,10 +604,7 @@ def launch_process(
                     xml_record = request_record(session, m.wchits.match_oclcNo)
                     if xml_record is not None:
                         update_hit_record(
-                            db_session,
-                            WCHit,
-                            m.wchits.wchid,
-                            match_marcxml=xml_record
+                            db_session, WCHit, m.wchits.wchid, match_marcxml=xml_record
                         )
                 update_progbar(progbar1)
                 update_progbar(progbar2)
@@ -664,7 +640,7 @@ def launch_process(
                         marc_record.add_ordered_field(overlay_tag)
 
                 if system == "NYPL":
-                    marc_record.remove_fields("001")
+                    marc_record.remove_fields("001", "910")
                     tag_001 = nypl_oclcNo_field(xml_record)
                     marc_record.add_ordered_field(tag_001)
 
@@ -674,8 +650,7 @@ def launch_process(
                     elif library == "research":
                         defloc = NBIB_DEFAULT_LOCATIONS["research"]
 
-                    tag_949 = create_command_line_field(
-                        "*b3=h;bn={};".format(defloc))
+                    tag_949 = create_command_line_field("*b3=h;bn={};".format(defloc))
                     marc_record.add_ordered_field(tag_949)
 
                 if action == "catalog":
@@ -705,10 +680,7 @@ def launch_process(
                             recap_no += 1
 
                 update_hit_record(
-                    db_session,
-                    WCHit,
-                    row.wchits.wchid,
-                    prepped_marc=marc_record
+                    db_session, WCHit, row.wchits.wchid, prepped_marc=marc_record
                 )
 
             update_progbar(progbar1)
@@ -730,8 +702,7 @@ def launch_process(
 def get_bib(meta_id):
     data = []
     with session_scope() as db_session:
-        r = retrieve_one_related(
-            db_session, WCSourceMeta, "wchits", wcsmid=meta_id)
+        r = retrieve_one_related(db_session, WCSourceMeta, "wchits", wcsmid=meta_id)
         sierra_data = dict(
             title=r.meta.title,
             sierraId=r.meta.sierraId,
@@ -783,18 +754,13 @@ def persist_choice(meta_ids, selected, barcode_var=None):
                 barcode = None
 
             update_meta_record(
-                db_session,
-                WCSourceMeta,
-                mid,
-                selected=selected,
-                barcode=barcode
+                db_session, WCSourceMeta, mid, selected=selected, barcode=barcode
             )
 
 
 def create_marc_file(system, dst_fh, no_holdings_msg=None):
     with session_scope() as db_session:
-        recs = retrieve_related(
-            db_session, WCSourceMeta, "wchits", selected=True)
+        recs = retrieve_related(db_session, WCSourceMeta, "wchits", selected=True)
         for r in recs:
             marc = r.wchits.prepped_marc
             if marc:
@@ -853,11 +819,7 @@ def set_oclc_holdings(dst_fh):
     oclc_numbers = []
     hold_not_set = []
     with session_scope() as db_session:
-        recs = retrieve_related(
-            db_session,
-            WCSourceMeta,
-            "wchits",
-            selected=True)
+        recs = retrieve_related(db_session, WCSourceMeta, "wchits", selected=True)
         for r in recs:
             if r.wchits.match_oclcNo:
                 oclc_numbers.append(str(r.wchits.match_oclcNo))
@@ -872,8 +834,7 @@ def set_oclc_holdings(dst_fh):
             holdings = holdings_responses(responses)
             if holdings:
                 for oclcNo, holding in holdings.items():
-                    recs = retrieve_records(
-                        db_session, WCHit, match_oclcNo=oclcNo)
+                    recs = retrieve_records(db_session, WCHit, match_oclcNo=oclcNo)
 
                     for rec in recs:
                         if holding[0] in ("set", "exists"):
@@ -892,8 +853,7 @@ def set_oclc_holdings(dst_fh):
         db_session.commit()
 
         # verify all selected had holdings set
-        recs = retrieve_related(
-            db_session, WCSourceMeta, "wchits", selected=True)
+        recs = retrieve_related(db_session, WCSourceMeta, "wchits", selected=True)
 
         for r in recs:
             if not r.wchits.holding_set:

@@ -3,6 +3,9 @@
 from pymarc import Field
 
 
+from bibs import create_tag_910
+
+
 def remove_oclc_prefix(controlNo):
     changed = False
     try:
@@ -23,7 +26,7 @@ def bib_patches(system, library, agent, vendor, bib):
     Treatment of specific records; special cases
     """
 
-    # nypl remove OCLC prefix
+    # nypl remove OCLC prefix & add appropriate 910 tag
     if system == "nypl":
         if "001" in bib:
             controlNo = bib.get_fields("001")[0].data
@@ -32,6 +35,10 @@ def bib_patches(system, library, agent, vendor, bib):
                 bib.remove_fields("001")
                 field = Field(tag="001", data=controlNo)
                 bib.add_ordered_field(field)
+
+        bib.remove_fields("910")
+        tag_910 = create_tag_910(system, library)
+        bib.add_ordered_field(tag_910)
 
     # nypl branches cat patch for BT Series
     if (
