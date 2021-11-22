@@ -3,195 +3,190 @@
 
 # nypl acq types
 NACQ_TYPE = {
-    'p': 'purchase',
-    'd': 'prepaid',
-    'r': 'recharge',
-    'e': 'exchange',
-    'c': 'deposit',
-    'm': 'undetermined',
-    's': 'special',
-    'g': 'gift',
-    'l': 'lease'
+    "p": "purchase",
+    "d": "prepaid",
+    "r": "recharge",
+    "e": "exchange",
+    "c": "deposit",
+    "m": "undetermined",
+    "s": "special",
+    "g": "gift",
+    "l": "lease",
 }
 
 # nypl claim codes
 NCLAIM = {
-    '-': '---',
-    'n': 'no claims',
-    'z': 'must claim',
-    'r': 'rush dec md',
-    'a': 'cl 1 dec md',
-    'b': 'cl 2 dec md',
-    'c': 'cl 3 dec md',
-    'd': 'cl 4 dec md',
-    'e': 'cl 5 dec md',
-    'f': 'cl 6 dec md'
+    "-": "---",
+    "n": "no claims",
+    "z": "must claim",
+    "r": "rush dec md",
+    "a": "cl 1 dec md",
+    "b": "cl 2 dec md",
+    "c": "cl 3 dec md",
+    "d": "cl 4 dec md",
+    "e": "cl 5 dec md",
+    "f": "cl 6 dec md",
 }
 
 # nypl order code1
 NORDER_CODE1 = {
-    'w': 'Wayne',
-    'c': 'Celeste',
-    '-': '---',
-    'b': 'Kimberly',
-    'f': 'CPRC',
-    'n': 'Andrew',
-    'l': 'Lequyen',
-    'a': 'Marie-Agnes',
-    'p': 'Pascale',
-    'd': 'Douglas',
-    'j': 'Jeanette',
-    'm': 'Marilin',
-    's': 'serials project',
-    'e': 'Eddie'
+    "g": "Amanda",
+    "w": "Wayne",
+    "c": "Celeste",
+    "-": "---",
+    "b": "Kimberly",
+    "f": "CPRC",
+    "n": "Andrew",
+    "l": "Lequyen",
+    "a": "Marie-Agnes",
+    "p": "Pascale",
+    "d": "Douglas",
+    "j": "Jeanette",
+    "m": "Marilin",
+    "s": "serials project",
+    "e": "Eddie",
 }
 
 # nypl order code2
 NORDER_CODE2 = {
-    'r': 'research',
-    'c': 'branch',
-    '-': '-',
-    'd': 'department',
-    'x': 'batch research',
-    'y': 'batch branch',
-    'e': 'doe educator'
+    "r": "research",
+    "c": "branch",
+    "-": "-",
+    "d": "department",
+    "x": "batch research",
+    "y": "batch branch",
+    "e": "doe educator",
 }
 
 # nypl order code 3
-NORDER_CODE3 = {
-    'd': 'domestic',
-    'f': 'foreign',
-    '-': 'no code'
-}
+NORDER_CODE3 = {"d": "domestic", "f": "foreign", "-": "no code"}
 
 # nypl order code 4
 NORDER_CODE4 = {
-    '-': '---',
-    'n': 'suppress',
-    'a': 'adult',
-    'j': 'juvenile',
-    'y': 'young adult'
+    "-": "---",
+    "n": "suppress",
+    "a": "adult",
+    "j": "juvenile",
+    "y": "young adult",
 }
 
 # nypl order item format
 N_OFORM = {
-    '-': 'undefined',
-    'b': 'book',
-    'p': 'periodical',
-    's': 'serial',
-    'm': 'microform',
-    'c': 'score',
-    'r': 'audio-other',
-    'u': 'map',
-    't': 'videocassette',
-    'f': 'film',
-    'd': 'cd-rom',
-    'e': 'elec access',
-    'k': 'kit-bk/audio',
-    'v': 'dvd',
-    'w': 'music cd',
-    'i': 'audio book',
-    'g': 'video game',
-    'a': 'arch/manusc.',
-    'h': 'print & photos',
-    'l': 'large print',
-    'j': 'realia',
-    'q': 'ebook',
-    'z': 'ejournal',
-    'y': 'bluray',
-    'o': 'print & electronic',
-    'x': 'playway',
-    '2': 'bookpack',
-    '3': 'streaming media'
+    "-": "undefined",
+    "b": "book",
+    "p": "periodical",
+    "s": "serial",
+    "m": "microform",
+    "c": "score",
+    "r": "audio-other",
+    "u": "map",
+    "t": "videocassette",
+    "f": "film",
+    "d": "cd-rom",
+    "e": "elec access",
+    "k": "kit-bk/audio",
+    "v": "dvd",
+    "w": "music cd",
+    "i": "audio book",
+    "g": "video game",
+    "a": "arch/manusc.",
+    "h": "print & photos",
+    "l": "large print",
+    "j": "realia",
+    "q": "ebook",
+    "z": "ejournal",
+    "y": "bluray",
+    "o": "print & electronic",
+    "x": "playway",
+    "2": "bookpack",
+    "3": "streaming media",
+    "5": "read-along book",
 }
 
 # nypl order type
 NORDER_TYPE = {
-    '-': 'undefined',
-    'f': 'firm order',
-    'o': 'stand order',
-    'i': 'item s.o.',
-    'a': 'approval plan',
-    's': 'subscription',
-    'l': 'lease',
-    'g': 'gift'
+    "-": "undefined",
+    "f": "firm order",
+    "o": "stand order",
+    "i": "item s.o.",
+    "a": "approval plan",
+    "s": "subscription",
+    "l": "lease",
+    "g": "gift",
 }
 
 # nypl order note
 NORDER_NOTE = {
-    '-': '---',
-    '1': '1 month delay',
-    '2': '2 month delay',
-    '3': '3 month delay',
-    '4': '6 month delay',
-    '5': '9 month delay',
-    '6': '1 year delay',
-    '7': '1.5 year delay',
-    '8': '2 year delay',
-    '9': '3 year delay',
-    'c': 'confirming',
-    'f': 'rush+conf',
-    'r': 'rush'
+    "-": "---",
+    "1": "1 month delay",
+    "2": "2 month delay",
+    "3": "3 month delay",
+    "4": "6 month delay",
+    "5": "9 month delay",
+    "6": "1 year delay",
+    "7": "1.5 year delay",
+    "8": "2 year delay",
+    "9": "3 year delay",
+    "c": "confirming",
+    "f": "rush+conf",
+    "r": "rush",
 }
 
 # nypl order status
 N_OSTATUS = {
-    'o': 'on order',
-    'q': 'part paid',
-    '1': 'on hold',
-    'c': 'ser on order',
-    'e': 'ser part paid',
-    'g': 'serial liened',
-    'a': 'fully paid',
-    'z': 'cancelled',
-    '2': 'approval rej',
-    'd': 'serial paid',
-    'f': 'serial no enc'
+    "o": "on order",
+    "q": "part paid",
+    "1": "on hold",
+    "c": "ser on order",
+    "e": "ser part paid",
+    "g": "serial liened",
+    "a": "fully paid",
+    "z": "cancelled",
+    "2": "approval rej",
+    "d": "serial paid",
+    "f": "serial no enc",
 }
 
 # nypl Recv Action
 NRACTION = {
-    '-': '---',
-    'a': 'attention',
-    'n': 'notify',
-    'r': 'rush',
-    'i': 'rush special instr.',
-    's': 'special instr.'
+    "-": "---",
+    "a": "attention",
+    "n": "notify",
+    "r": "rush",
+    "i": "rush special instr.",
+    "s": "special instr.",
 }
 
 # nypl default bibliograhic locations for brief records
-NBIB_DEFAULT_LOCATIONS = {
-    'branches': 'zzzzz',
-    'research': 'xxx'
-}
+NBIB_DEFAULT_LOCATIONS = {"branches": "zzzzz", "research": "xxx"}
 
 # languages
 LANG = {
-    'ara': 'Arabic',
-    'ben': 'Bengali',
-    'chi': 'Chinese',
-    'eng': 'English',
-    'fre': 'French',
-    'ger': 'German',
-    'heb': 'Hebrew',
-    'hin': 'Hindi',
-    'hun': 'Hungarian',
-    'ita': 'Italian',
-    'jpn': 'Japanese',
-    'kor': 'Korean',
-    'pan': 'Panjabi',
-    'pol': 'Polish',
-    'por': 'Portuguese',
-    'rus': 'Russian',
-    'san': 'Sanskrit',
-    'spa': 'Spanish',
-    'ukr': 'Ukrainian',
-    'und': 'Undetermined',
-    'urd': 'Urdu',
-    'yid': 'Yiddish',
-    'zxx': 'No linguistic content',
-    'hat': 'Haitian French Creole',
-    'alb': 'Albanian'
+    "ara": "Arabic",
+    "ben": "Bengali",
+    "chi": "Chinese",
+    "eng": "English",
+    "fre": "French",
+    "ger": "German",
+    "heb": "Hebrew",
+    "hin": "Hindi",
+    "hun": "Hungarian",
+    "ita": "Italian",
+    "jpn": "Japanese",
+    "kor": "Korean",
+    "pan": "Panjabi",
+    "pol": "Polish",
+    "por": "Portuguese",
+    "rus": "Russian",
+    "san": "Sanskrit",
+    "spa": "Spanish",
+    "ukr": "Ukrainian",
+    "und": "Undetermined",
+    "urd": "Urdu",
+    "yid": "Yiddish",
+    "zxx": "No linguistic content",
+    "hat": "Haitian French Creole",
+    "alb": "Albanian",
 }
 
 
@@ -534,35 +529,36 @@ COUNTRIES = {
 
 
 N_MATFORM = {
-    'p': 'archiwal mix',
-    'm': 'computer file',
-    'z': 'ebook',
-    'x': 'game',
-    't': 'manuscript',
-    'h': 'microform',
-    'j': 'music non-cd',
-    'i': 'spoken word',
-    'r': '3-d object',
-    '7': 'teacher audio',
-    'u': 'audiobook',
-    'v': 'dvd',
-    '3': 'e-video',
-    'o': 'kit',
-    'd': 'mauscript mus',
-    '-': 'misc',
-    'k': 'picture',
-    's': 'vhs',
-    '8': 'teacher set',
-    '4': 'tablet',
-    'a': 'book/text',
-    'n': 'e-audiobook',
-    'g': 'film,slicde,etc',
-    'l': 'large print',
-    'e': 'map',
-    'y': 'music cd',
-    'c': 'score',
-    'w': 'web resource',
-    'b': 'blu-ray'
+    "p": "archiwal mix",
+    "m": "computer file",
+    "z": "ebook",
+    "x": "game",
+    "t": "manuscript",
+    "h": "microform",
+    "j": "music non-cd",
+    "i": "spoken word",
+    "r": "3-d object",
+    "7": "teacher audio",
+    "u": "audiobook",
+    "v": "dvd",
+    "3": "e-video",
+    "o": "kit",
+    "d": "mauscript mus",
+    "-": "misc",
+    "k": "picture",
+    "s": "vhs",
+    "8": "teacher set",
+    "4": "tablet",
+    "a": "book/text",
+    "n": "e-audiobook",
+    "g": "film,slicde,etc",
+    "l": "large print",
+    "e": "map",
+    "y": "music cd",
+    "c": "score",
+    "w": "web resource",
+    "b": "blu-ray",
+    "5": "read-along book",
 }
 
 NYPL_BRANCHES = {
@@ -579,6 +575,7 @@ NYPL_BRANCHES = {
     "ch": "Chatham Square",
     "ci": "City Island",
     "cl": "Morningside Heights",
+    "cn": "Charleston",
     "cp": "Clason's Point",
     "cs": "Columbus",
     "ct": "Castle Hill",
@@ -660,7 +657,7 @@ NYPL_BRANCHES = {
     "wt": "Westchester Square",
     "yv": "Yorkville",
     "ft": "53rd Street",
-    "ls": "Library Services Center"
+    "ls": "Library Services Center",
 }
 
 BPL_BRANCHES = {
@@ -723,6 +720,7 @@ BPL_BRANCHES = {
     "70": "Red Hook",
     "71": "Ulmer Park",
     "72": "Bookmobile",
+    "73": "Bookmobile #2",
     "74": "Gravesend",
     "76": "Homecrest",
     "77": "Windsor Terrace",
@@ -732,14 +730,20 @@ BPL_BRANCHES = {
     "81": "Jamaica Bay",
     "82": "Dyker",
     "83": "Clinton Hill",
+    "84": "Brookdale Pop-up",
     "85": "Spring Creek",
     "87": "Cortelyou",
+    "88": "Adams St.",
     "89": "BookOps",
     "90": "Service to the Aging SAGE/SOA",
-    "94": "Central Literacy"
+    "91": "Center for Bkln History",
+    "94": "Central Literacy",
 }
 
 
-NW2SEXPORT_COLS = ['020|a~RECORD #(BIBLIO)~005~010|a~024|a~035|a~245|a~RECORD #(ORDER)~VEN NOTE(ORDER)~NOTE(ORDER)~INT NOTE(ORDER)~CODE2~CODE4~LOCATION~FORM~VENDOR~STATUS']
-BW2SEXPORT_COLS = ['020|a~RECORD #~005~010|a~024|a~035|a~245|a~RECORD #~VEN NOTE~NOTE~INT NOTE~CODE2~OPAC DISPLAY~LOCATION~FORMAT~VENDOR~STATUS']
-
+NW2SEXPORT_COLS = [
+    "020|a~RECORD #(BIBLIO)~005~010|a~024|a~035|a~245|a~RECORD #(ORDER)~VEN NOTE(ORDER)~NOTE(ORDER)~INT NOTE(ORDER)~CODE2~CODE4~LOCATION~FORM~VENDOR~STATUS"
+]
+BW2SEXPORT_COLS = [
+    "020|a~RECORD #~005~010|a~024|a~035|a~245|a~RECORD #~VEN NOTE~NOTE~INT NOTE~CODE2~OPAC DISPLAY~LOCATION~FORMAT~VENDOR~STATUS"
+]
