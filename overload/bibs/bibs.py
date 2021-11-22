@@ -36,6 +36,23 @@ def create_field(tag, indicators=[" ", " "], subfields=["a"]):
     return Field(tag=tag, indicators=indicators, subfields=subfields)
 
 
+def create_tag_910(system, library):
+    """
+    Creates 910 for NYPL records with code for Research or Branches
+    """
+    if system == "NYPL":
+        if library == "branches":
+            code = "BL"
+        elif library == "research":
+            code = "RL"
+        else:
+            raise ValueError("Invalid 'library' argument passed.")
+
+        return Field(tag="910", indicators=[" ", " "], subfields=["a", code])
+    else:
+        return None
+
+
 def create_target_id_field(system, bNumber):
     if len(bNumber) != 8:
         raise ValueError(
@@ -195,7 +212,7 @@ def count_bibs(file):
 
 
 def db_template_to_960(template, vendor_960):
-    """"passed attr must be an instance of NYPLOrderTemplate"""
+    """ "passed attr must be an instance of NYPLOrderTemplate"""
 
     # order fixed fields mapping
     try:

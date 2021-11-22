@@ -116,6 +116,19 @@ class TestBibsUtilities(unittest.TestCase):
         reader = JSONReader("test.json")
         self.assertIs(type(reader), JSONReader)
 
+    def test_create_tag_910_for_nypl_branches(self):
+        self.assertEqual(str(bibs.create_tag_910("NYPL", "branches")), "=910  \\\\$aBL")
+
+    def test_create_tag_910_for_nypl_research(self):
+        self.assertEqual(str(bibs.create_tag_910("NYPL", "research")), "=910  \\\\$aRL")
+
+    def test_create_tag_910_for_bpl(self):
+        self.assertIsNone(bibs.create_tag_910("BPL", None))
+
+    def test_create_tag_910_invalid_nypl_branch(self):
+        with self.assertRaises(ValueError):
+            bibs.create_tag_910("NYPL", None)
+
     def test_create_target_id_field_exceptions(self):
         with self.assertRaises(ValueError):
             bibs.create_target_id_field("nypl", "012345")
@@ -571,7 +584,14 @@ class TestTemplate_to_961(unittest.TestCase):
 
     def test_mixed_vendor_template_field(self):
         vfield = Field(
-            tag="961", indicators=[" ", " "], subfields=["a", "1", "v", "1",]
+            tag="961",
+            indicators=[" ", " "],
+            subfields=[
+                "a",
+                "1",
+                "v",
+                "1",
+            ],
         )
 
         self.temp.identity = "a"
