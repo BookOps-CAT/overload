@@ -145,7 +145,7 @@ def create_nypl_callnum(
                 if order_data.callType == "fic":
                     subfields.extend(["a", "FIC"])
                 elif order_data.callType == "gfi":
-                    subfields.extend(["a", "GN FIC"])
+                    subfields.extend(["a", "FIC"])
                 elif order_data.callType == "mys":
                     subfields.extend(["a", "MYSTERY"])
                 elif order_data.callType == "rom":
