@@ -97,8 +97,6 @@ def create_nypl_callnum(
                     subfields.extend(["f", "CLASSICS"])
                 elif order_data.callLabel == "gra":
                     subfields.extend(["f", "GRAPHIC"])
-                elif order_data.callLabel == "bil":
-                    subfields.extend(["f", "BILINGUAL"])
 
                 # classification
                 # picture books
