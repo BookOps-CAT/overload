@@ -30,21 +30,20 @@ NCLAIM = {
 
 # nypl order code1
 NORDER_CODE1 = {
-    "g": "Amanda",
-    "w": "Wayne",
-    "c": "Celeste",
     "-": "---",
-    "b": "Kimberly",
-    "f": "CPRC",
+    "1": "Acquisitions",
+    "a": "Jessica",
+    "b": "Stephanie",
+    "d": "Grace",
+    "e": "Emily",
+    "f": "Nick",
+    "g": "Alexandra",
+    "l": "Christopher",
+    "m": "Michelle",
     "n": "Andrew",
-    "l": "Lequyen",
-    "a": "Marie-Agnes",
-    "p": "Pascale",
-    "d": "Douglas",
-    "j": "Jeanette",
-    "m": "Marilin",
-    "s": "serials project",
-    "e": "Eddie",
+    "r": "Libbhy",
+    "s": "Yolande",
+    "w": "Wayne",
 }
 
 # nypl order code2
