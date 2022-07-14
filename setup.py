@@ -35,7 +35,7 @@ REQUIRED = [
     "loggly-python-handler==1.0.0",
     "macholib==1.9",
     "mock==2.0.0",
-    "numpy==1.21.0",
+    "numpy==1.22.0",
     "oauth2client==4.1.3",
     "oauthlib==2.0.4",
     "pandas==0.20.3",
