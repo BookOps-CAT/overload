@@ -1,2 +1,0 @@
-version: 0.10.0 (BETA)
-last updated: 11-22-2021
