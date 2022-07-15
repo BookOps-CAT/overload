@@ -39,77 +39,7 @@ from setup_dirs import *
 from wc2sierra.gui import Worldcat2Sierra
 from getbib.gui import GetBibs
 
-
-def updates(manual=True):
-    with open("version.txt", "r") as app_fh:
-        app_version = app_fh.readline()[9:].strip()
-        overload_logger.debug(
-            "Checking for Overload updates. Current version: {}".format(app_version)
-        )
-
-    user_data = shelve.open(USER_DATA)
-    if "update_dir" in user_data["paths"]:
-        update_dir = user_data["paths"]["update_dir"]
-        overload_logger.debug(
-            "Using update directory from user_data: {}".format(update_dir)
-        )
-        if os.path.isfile(update_dir + r"\version.txt"):
-            overload_logger.debug("Found version.txt in update directory")
-            up_fh = update_dir + r"\version.txt"
-            with open(up_fh, "r") as up_f:
-                update_version = up_f.readline()[9:].strip()
-                overload_logger.debug(
-                    "Version available for pull: {}".format(update_version)
-                )
-                if app_version != update_version:
-                    overload_logger.debug(
-                        "Local version different than in update directory"
-                    )
-                    m = (
-                        "A new version ({}) of Overload has been "
-                        "found.\nWould you like to run the "
-                        "update?".format(update_version)
-                    )
-                    if tkMessageBox.askyesno("Update Info", m):
-                        overload_logger.info(
-                            "{} user is upgrading to overload version {}".format(
-                                USER_NAME, update_version
-                            )
-                        )
-                        # launch updater & quit main app
-                        user_data.close()
-                        args = '{} "{}"'.format("updater.exe", update_dir)
-                        CREATE_NO_WINDOW = 0x08000000
-                        subprocess.call(args, creationflags=CREATE_NO_WINDOW)
-                else:
-                    if manual:
-                        overload_logger.debug(
-                            "Local and update directory versions are " "the same"
-                        )
-                        m = "Overload is up-to-date"
-                        tkMessageBox.showinfo("Info", m)
-        else:
-            overload_logger.error(
-                "Missing files. Failed to find version.txt in ({})".format(update_dir)
-            )
-            m = (
-                '"version.txt" file in update folder not found.\n'
-                "Please provide update directory to correct folder\n"
-                "Go to:\n"
-                "settings>default directories>update folder"
-            )
-            tkMessageBox.showwarning("Missing Files", m)
-    else:
-        overload_logger.warning(
-            "Update directory not setup in Settings: user={}".format(USER_NAME)
-        )
-        m = (
-            "please provide update directory\n"
-            "Go to:\n"
-            "settings>default directories>update folder"
-        )
-        tkMessageBox.showwarning("Missing Directory", m)
-    user_data.close()
+VERSION = "0.10.1"
 
 
 class MainApplication(tk.Tk):
@@ -174,7 +104,6 @@ class MainApplication(tk.Tk):
         menubar.add_cascade(label="Reports", menu=report_menu)
         help_menu = tk.Menu(menubar, tearoff=0)
         help_menu.add_command(label="help index", command=None)
-        help_menu.add_command(label="updates", command=updates)
         help_menu.add_command(
             label="about...", command=lambda: self.show_frame("About")
         )
@@ -2369,15 +2298,7 @@ class About(tk.Frame):
 
     def observer(self, *args):
         if self.activeW.get() == "About":
-            info = ""
-            with open("version.txt") as fh:
-                for line in fh:
-                    info += line
-            if os.path.isfile(PATCHING_RECORD):
-                with open(PATCHING_RECORD, "r") as fh:
-                    info += "\ninstalled patches:\n"
-                    for line in fh:
-                        info += "  {}".format(line)
+            info = "Version: {}\n".format(VERSION)
             credits = ""
             with open("./help/icon_credits.txt") as fh:
                 for line in fh:
@@ -2399,10 +2320,6 @@ if __name__ == "__main__":
         user_data["paths"] = {}
     user_data.close()
 
-    about = {}
-    with open("version.txt") as f:
-        version = f.readline()[9:].strip()
-
     # set up app logger
     logging.config.dictConfig(DEV_LOGGING)
     logger = logging.getLogger("overload")
@@ -2415,7 +2332,7 @@ if __name__ == "__main__":
     app = MainApplication()
     cur_manager = BusyManager(app)
     app.iconbitmap("./icons/SledgeHammer.ico")
-    app.title("Overload version {}".format(version))
+    app.title("Overload version {}".format(VERSION))
     s = ttk.Style()
     s.theme_use("clam")
     s.configure(".", font=("Helvetica", 12), background="white")
@@ -2425,7 +2342,5 @@ if __name__ == "__main__":
     s.configure("Bold.TLabel", font=("Helvetica", 12, "bold"))
     s.configure("Small.TLabel", font=("Helvetica", 8))
     s.configure("Medium.Treeview", font=("Helvetica", 9))
-
-    # updates(manual=False)
 
     app.mainloop()
